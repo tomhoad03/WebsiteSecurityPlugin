@@ -1,13 +1,11 @@
-button {
-  height: 30px;
-  width: 30px;
+.btn {
   outline: none;
   margin: 10px;
   border: none;
   border-radius: 2px;
 }
 
-button.current {
+.btn.current {
   box-shadow: 0 0 0 2px white,
               0 0 0 4px black;
 }

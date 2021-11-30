@@ -1,9 +1,5 @@
 let blockerBtn = document.getElementById("blockerBtn");
 
-chrome.storage.sync.get("color", ({color}) => {
-    blockerBtn.style.backgroundColor = color;
-});
-
 blockerBtn.addEventListener("click", async () => {
     let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
