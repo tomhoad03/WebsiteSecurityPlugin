@@ -8,6 +8,7 @@
   },
   "permissions": ["storage", "activeTab", "scripting"],
   "action": {
+    "default_title": "Web Browser Security Plugin",
     "default_popup": "/html/popup.html",
     "default_icon": {
       "16": "/icons/get_started16.png",
