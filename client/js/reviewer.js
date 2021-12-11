@@ -1,15 +1,5 @@
 let reviewerBtn = document.getElementById("reviewerBtn");
 
-// Runs when the popup loads
-window.addEventListener('DOMContentLoaded', async() => {
-    let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
-    chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        function: basicReview,
-    });
-});
-
 // When clicked, the plugin performs code review.
 reviewerBtn.addEventListener("click", async () => {
     let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -19,26 +9,6 @@ reviewerBtn.addEventListener("click", async () => {
         function: codeReview,
     });
 });
-
-// Performs a basic code review of the websites
-function basicReview() {
-    let href = window.location.href; // gets full href
-    let domain = window.location.hostname; // host domain (local host for testbed)
-    let path = window.location.pathname; // path and filename of the current page
-    let protocol = window.location.protocol; // http or https
-
-    if (protocol === "HTTP:") {
-        console.log("The website is using the HTTP protocol.");
-    } else {
-        console.log("The website is using the HTTP protocol.");
-    }
-
-    let ws = new WebSocket("ws://localhost:8080");
-
-    ws.addEventListener("open", () => {
-        console.log("We are connected.");
-    })
-}
 
 // Performs a more advanced code review of the website
 function codeReview() {
