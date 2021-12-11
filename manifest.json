@@ -6,7 +6,8 @@
   "background": {
     "service_worker": "/client/js/background.js"
   },
-  "permissions": ["storage", "activeTab", "scripting"],
+  "permissions": ["storage", "activeTab", "scripting", "tabs", "webNavigation"],
+  "host_permissions": ["http://*/*", "https://*/*"],
   "action": {
     "default_title": "Web Browser Security Plugin",
     "default_popup": "/client/html/popup.html",

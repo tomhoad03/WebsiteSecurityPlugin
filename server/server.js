@@ -4,9 +4,7 @@ const wss = new WebSocket.Server({port: 8080});
 
 // Start a connection with the plugin
 wss.on("connection", ws => {
-    console.log("Client connected.")
-
-    // Listen out for information from the plugin
+    // Listen for messages from the plugin
     ws.on("message", message => {
         const data = JSON.parse(message);
         console.log(data);
