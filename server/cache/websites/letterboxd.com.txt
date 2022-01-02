@@ -1,7 +1,8 @@
 Domain: letterboxd.com
-Score: 2
+Score: 1
 
 Vulnerabilities
 
 HTTPS Protocols: true
-Script Integrity: true
+Script Integrity: false
+Client Side Comments: false

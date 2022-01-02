@@ -1,4 +1,4 @@
-Domain: www.google.com
+Domain: code.jquery.com
 Score: 1
 
 Vulnerabilities

@@ -1,8 +1,8 @@
-Domain: www.google.com
-Score: 1
+Domain: www.javascript.com
+Score: 2
 
 Vulnerabilities
 
 HTTPS Protocols: true
 Script Integrity: false
-Client Side Comments: false
+Client Side Comments: true

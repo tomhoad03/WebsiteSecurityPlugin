@@ -1,0 +1,7 @@
+Domain: www.srihash.org
+Score: 1
+
+Vulnerabilities
+
+HTTPS Protocols: true
+Script Integrity: undefined
