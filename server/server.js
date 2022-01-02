@@ -7,34 +7,40 @@ wss.on("connection", ws => {
     // Listen for messages from the plugin
     ws.on("message", message => {
         const data = JSON.parse(message);
-        console.log(data);
+
+        const serverMsg = "\nHref: " + data.href + "\n"
+                          + "Domain: " + data.domain + "\n"
+                          + "Path: " + data.path + "\n";
+        console.log(serverMsg);
+
         let score = 0;
+        let httpsProtocols, scriptIntegrity;
 
         // Compute the information from the plugin
         if (data.id === "window") {
             if (data.protocol === "https:") {
-                score = score + 1;
+                httpsProtocols = true;
+                score++;
+            }
+            if (checkIntegrity(data.html)) {
+                scriptIntegrity = true;
+                score++;
+
+                /*
+                Validates HTML files for compliance against the W3C standards and performs linting to assess code quality against best practices.
+                Find missing or unbalanced HTML tags in your documents, stray characters, duplicate IDs, missing or invalid attributes and other recommendations.
+                Supports HTML5, SVG 1.1, MathML 3.0, ITS 2.0, RDFa Lite 1.1. Implementation is based on Validator.Nu.
+                 */
             }
         }
 
-        // Store a list of secure and insecure websites
-        const httpsData = fs.readFileSync(process.cwd() + "/cache/websites/https.txt", "utf8");
-        const newHttpsData = httpsData.split("\n").filter(line => line !== data.domain).join("\n");
-        fs.writeFileSync(process.cwd() + "/cache/websites/https.txt", newHttpsData);
+        const contents = "Domain: " + data.domain + "\n"
+                         + "Score: " + score + "\n\n"
+                         + "Vulnerabilities\n\n"
+                         + "HTTPS Protocols: " + httpsProtocols + "\n"
+                         + "Script Integrity: " + scriptIntegrity + "\n";
 
-        const httpData = fs.readFileSync(process.cwd() + "/cache/websites/http.txt", "utf8");
-        const newHttpData = httpData.split("\n").filter(line => line !== data.domain).join("\n");
-        fs.writeFileSync(process.cwd() + "/cache/websites/http.txt", newHttpData);
-
-        if (score > 0) {
-            fs.appendFileSync(process.cwd() + "/cache/websites/https.txt", data.domain + "\n", () => {
-                console.log(data.domain + " > /cache/websites/https.txt");
-            });
-        } else {
-            fs.appendFileSync(process.cwd() + "/cache/websites/http.txt", data.domain + "\n", () => {
-                console.log(data.domain + " > /cache/websites/http.txt");
-            });
-        }
+        fs.writeFileSync(process.cwd() + "\\server\\cache\\websites\\" + data.domain + ".txt", contents);
 
         // Update the plugin with the current security rating
         ws.send(JSON.stringify({
@@ -43,3 +49,20 @@ wss.on("connection", ws => {
         }));
     })
 });
+
+// CWE-353
+function checkIntegrity(html) {
+    if (html.indexOf("<script") === -1) {
+        return true;
+    } else {
+        let scriptTag = html.substring(html.indexOf("<script"), html.indexOf(">", html.indexOf("<script")) + 1);
+        // let scriptInTag = html.substring(html.indexOf(">", html.indexOf("<script")) + 1, html.indexOf("</script>", html.indexOf("<script")));
+
+        if (scriptTag.indexOf("src=") !== -1) {
+            let src = scriptTag.substring(scriptTag.indexOf("src=") + 5, scriptTag.indexOf("\"", scriptTag.indexOf("src=") + 5))
+            console.log(scriptTag + "\n" + src + "\n");
+        }
+
+        return checkIntegrity(html.substring(html.indexOf("</script>") + 9));
+    }
+}

@@ -1,0 +1,7 @@
+Domain: localhost
+Score: 1
+
+Vulnerabilities
+
+HTTPS Protocols: undefined
+Script Integrity: true

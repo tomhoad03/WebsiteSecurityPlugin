@@ -1,0 +1,7 @@
+Domain: fantasy.premierleague.com
+Score: 2
+
+Vulnerabilities
+
+HTTPS Protocols: true
+Script Integrity: true

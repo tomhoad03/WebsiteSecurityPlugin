@@ -1,0 +1,7 @@
+Domain: kumari-gra.com
+Score: 0
+
+Vulnerabilities
+
+HTTPS Protocols: undefined
+Script Integrity: undefined

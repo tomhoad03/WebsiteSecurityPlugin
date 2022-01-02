@@ -1,0 +1,7 @@
+Domain: github.com
+Score: 1
+
+Vulnerabilities
+
+HTTPS Protocols: true
+Script Integrity: undefined
