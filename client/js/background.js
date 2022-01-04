@@ -3,11 +3,11 @@ chrome.webNavigation.onDOMContentLoaded.addListener(async () => {
 
     chrome.scripting.executeScript({
         target: { tabId: tab.id },
-        function: test,
+        function: socket,
     });
 });
 
-function test() {
+function socket() {
     let ws = new WebSocket("ws://localhost:8080");
 
     // Listen for messages from the server.
@@ -30,7 +30,9 @@ function test() {
         console.log(data);
 
         if (data.id === "score") {
-            console.log("Score = " + data.score);
+            let score = data.score;
+            console.log("Score = " + score);
+            chrome.storage.sync.set({score});
         }
     });
 }
