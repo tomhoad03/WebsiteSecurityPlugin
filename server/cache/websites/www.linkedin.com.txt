@@ -5,4 +5,5 @@ Vulnerabilities
 
 HTTPS Protocols: true
 Script Integrity: false
+Internal Scripts: false
 Client Side Comments: false

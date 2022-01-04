@@ -4,4 +4,5 @@ Score: 1
 Vulnerabilities
 
 HTTPS Protocols: true
-Script Integrity: undefined
+Script Integrity: false
+Client Side Comments: false

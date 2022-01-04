@@ -1,10 +1,10 @@
-Domain: twitter.com
-Score: 2
+Domain: www.cl.cam.ac.uk
+Score: 4
 
 Vulnerabilities
 
 HTTPS Protocols: true
-Script Integrity: false
-Internal Scripts: false
+Script Integrity: true
+Internal Scripts: true
 Client Side Comments: true
 Untrusted Links: false

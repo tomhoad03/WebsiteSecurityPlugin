@@ -1,8 +1,10 @@
 Domain: www.youtube.com
-Score: 1
+Score: 2
 
 Vulnerabilities
 
 HTTPS Protocols: true
-Script Integrity: false
+Script Integrity: true
+Internal Scripts: false
 Client Side Comments: false
+Untrusted Links: false

@@ -1,9 +1,10 @@
-Domain: fantasy.premierleague.com
-Score: 1
+Domain: html.spec.whatwg.org
+Score: 2
 
 Vulnerabilities
 
 HTTPS Protocols: true
 Script Integrity: false
 Internal Scripts: false
-Client Side Comments: false
+Client Side Comments: true
+Untrusted Links: false

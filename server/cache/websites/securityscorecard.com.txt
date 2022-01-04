@@ -1,9 +1,8 @@
-Domain: fantasy.premierleague.com
+Domain: securityscorecard.com
 Score: 1
 
 Vulnerabilities
 
 HTTPS Protocols: true
 Script Integrity: false
-Internal Scripts: false
 Client Side Comments: false

@@ -1,4 +1,4 @@
-Domain: fantasy.premierleague.com
+Domain: secure.ecs.soton.ac.uk
 Score: 1
 
 Vulnerabilities

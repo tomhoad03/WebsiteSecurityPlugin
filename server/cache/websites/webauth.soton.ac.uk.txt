@@ -1,0 +1,9 @@
+Domain: webauth.soton.ac.uk
+Score: 4
+
+Vulnerabilities
+
+HTTPS Protocols: true
+Script Integrity: true
+Internal Scripts: true
+Client Side Comments: true

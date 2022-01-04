@@ -1,8 +1,10 @@
 Domain: github.com
-Score: 2
+Score: 3
 
 Vulnerabilities
 
 HTTPS Protocols: true
 Script Integrity: true
+Internal Scripts: false
 Client Side Comments: false
+Untrusted Links: true

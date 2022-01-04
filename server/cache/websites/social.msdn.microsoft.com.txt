@@ -1,4 +1,4 @@
-Domain: fantasy.premierleague.com
+Domain: social.msdn.microsoft.com
 Score: 1
 
 Vulnerabilities
@@ -7,3 +7,4 @@ HTTPS Protocols: true
 Script Integrity: false
 Internal Scripts: false
 Client Side Comments: false
+Untrusted Links: false

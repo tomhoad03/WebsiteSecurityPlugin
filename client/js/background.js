@@ -20,14 +20,13 @@ function socket() {
             domain: window.location.hostname,
             path: window.location.pathname,
             protocol: window.location.protocol,
-            html: document.getElementsByTagName('html')[0].innerHTML
+            html: document.getElementsByTagName('html')[0].innerHTML,
         }));
     });
 
     // Update the security score.
     ws.addEventListener("message", message => {
         const data = JSON.parse(message.data);
-        console.log(data);
 
         if (data.id === "score") {
             let score = data.score;
