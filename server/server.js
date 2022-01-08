@@ -137,7 +137,7 @@ function checkUntrustedLinks(html) {
 
         // Return true if is external
         if (!link.includes("http") || link.includes("https")) {
-            console.log(link);
+            // console.log(link);
             return checkUntrustedLinks(html.substring(html.indexOf("href=\"") + 6));
         } else {
             return false;
