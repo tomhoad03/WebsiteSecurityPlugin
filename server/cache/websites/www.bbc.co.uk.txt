@@ -1,8 +1,10 @@
 Domain: www.bbc.co.uk
-Score: 1
+Score: 3
 
 Vulnerabilities
 
 HTTPS Protocols: true
 Script Integrity: false
-Client Side Comments: false
+Internal Scripts: false
+Client Side Comments: true
+Untrusted Links: true

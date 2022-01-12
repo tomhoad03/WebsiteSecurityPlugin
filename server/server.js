@@ -67,7 +67,7 @@ wss.on("connection", ws => {
                          + "Client Side Comments: " + clientSideComments + "\n"
                          + "Untrusted Links: " + untrustedLinks + "\n";
 
-        fs.writeFileSync(process.cwd() + "\\server\\cache\\websites\\" + data.domain + ".txt", contents);
+        fs.writeFileSync(process.cwd() + "\\cache\\websites\\" + data.domain + ".txt", contents);
 
         // Update the plugin with the current security rating
         ws.send(JSON.stringify({

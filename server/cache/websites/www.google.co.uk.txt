@@ -1,10 +1,10 @@
-Domain: localhost
-Score: 2
+Domain: www.google.co.uk
+Score: 4
 
 Vulnerabilities
 
-HTTPS Protocols: false
+HTTPS Protocols: true
 Script Integrity: true
 Internal Scripts: false
-Client Side Comments: false
+Client Side Comments: true
 Untrusted Links: true

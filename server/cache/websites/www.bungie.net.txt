@@ -1,10 +1,10 @@
-Domain: letterboxd.com
-Score: 1
+Domain: www.bungie.net
+Score: 3
 
 Vulnerabilities
 
 HTTPS Protocols: true
 Script Integrity: false
 Internal Scripts: false
-Client Side Comments: false
-Untrusted Links: false
+Client Side Comments: true
+Untrusted Links: true

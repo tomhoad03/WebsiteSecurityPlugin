@@ -1,5 +1,5 @@
 Domain: twitter.com
-Score: 2
+Score: 3
 
 Vulnerabilities
 
@@ -7,4 +7,4 @@ HTTPS Protocols: true
 Script Integrity: false
 Internal Scripts: false
 Client Side Comments: true
-Untrusted Links: false
+Untrusted Links: true
