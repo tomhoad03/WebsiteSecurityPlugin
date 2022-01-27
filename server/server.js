@@ -1,6 +1,6 @@
 const fs = require("fs");
-const WebSocket = require("ws");
-const wss = new WebSocket.Server({port: 8080});
+const {Server} = require("ws");
+const wss = new Server({port: 8080});
 
 // Start a connection with the plugin
 wss.on("connection", ws => {
@@ -14,65 +14,82 @@ wss.on("connection", ws => {
         console.log(serverMsg);
 
         let score = 0;
-        let httpsProtocols = false, scriptIntegrity = false, clientSideComments = false, internalScript = false, untrustedLinks = false;
+        let httpsProtocolsTest = false, scriptIntegrityTest = false, clientSideCommentsTest = false, internalScriptTest = false, untrustedLinksTest = false,
+            basicXXSTest = false;
 
         // Compute the information from the plugin
         if (data.id === "window") {
 
             // Check if the webpage uses https protocols
             if (data.protocol === "https:") {
-                httpsProtocols = true;
+                httpsProtocolsTest = true;
                 score++;
             }
 
             // Check if external scripts are secure
-            if (checkScriptIntegrity(data.html)) {
-                scriptIntegrity = true;
+            if (checkScriptIntegrityTest(data.html)) {
+                scriptIntegrityTest = true;
                 score++;
             }
 
             // Check if any internal scripts are used
-            if (checkInternalScript(data.html)) {
-                internalScript = true;
+            if (checkInternalScriptTest(data.html)) {
+                internalScriptTest = true;
                 score++;
             }
 
             // Check if any comments are left in the html
-            if (checkClientSideComments(data.html)) {
-                clientSideComments = true;
+            if (checkClientSideCommentsTest(data.html)) {
+                clientSideCommentsTest = true;
                 score++;
             }
 
             // Check if any hyperlinks on a page are suspicious.
-            if (checkUntrustedLinks(data.html)) {
-                untrustedLinks = true;
+            if (checkUntrustedLinksTest(data.html)) {
+                untrustedLinksTest = true;
+                score++;
+            }
+
+            // Performs a basic XSS vulnerability check
+            if (checkBasicXXSTest(data.html)) {
+                basicXXSTest = true;
                 score++;
             }
 
             /*
             Validates HTML files for compliance against the W3C standards and performs linting to assess code quality against best practices.
+
             Find missing or unbalanced HTML tags in your documents, stray characters, duplicate IDs, missing or invalid attributes and other recommendations.
             Supports HTML5, SVG 1.1, MathML 3.0, ITS 2.0, RDFa Lite 1.1. Implementation is based on Validator.Nu.
+
             CORS Policy
+
             https://securityscorecard.com/blog/common-web-application-vulnerabilities-explained
+            https://cheatsheetseries.owasp.org/cheatsheets/XSS_Filter_Evasion_Cheat_Sheet.html
+
+            SQL Injection, XSS, insecure cookies, insecure session/session vulnerabilities, insecure file upload, CSRF, internal information/information leakage,
+            parameter manipulation, application logic, out of date software, file inclusion, open redirects, brute force
              */
         }
 
-        const contents = "Domain: " + data.domain + "\n"
-                         + "Score: " + score + "\n\n"
-                         + "Vulnerabilities\n\n"
-                         + "HTTPS Protocols: " + httpsProtocols + "\n"
-                         + "Script Integrity: " + scriptIntegrity + "\n"
-                         + "Internal Scripts: " + internalScript + "\n"
-                         + "Client Side Comments: " + clientSideComments + "\n"
-                         + "Untrusted Links: " + untrustedLinks + "\n";
+        const results = "<ul>" +
+                            "<li>Domain: " + data.domain + "</li>" +
+                            "<li>Score: " + score + "</li>" +
+                            "<li>HTTPS Protocols: " + httpsProtocolsTest + "</li>" +
+                            "<li>Script Integrity: " + scriptIntegrityTest + "</li>" +
+                            "<li>Internal Scripts: " + internalScriptTest + "</li>" +
+                            "<li>Client Side Comments: " + clientSideCommentsTest + "</li>" +
+                            "<li>Untrusted Links: " + untrustedLinksTest + "</li>" +
+                            "<li>Basic XSS Test: " + basicXXSTest + "</li>" +
+                        "</ul>"
 
-        fs.writeFileSync(process.cwd() + "\\cache\\websites\\" + data.domain + ".txt", contents);
+        fs.writeFileSync(process.cwd() + "\\cache\\websites\\" + data.domain + ".txt", results);
 
         // Update the plugin with the current security rating
         ws.send(JSON.stringify({
-            id: "score",
-            score: score
+            id: "results",
+            score: score,
+            results: results
         }));
     })
 });
@@ -80,7 +97,7 @@ wss.on("connection", ws => {
 // CWE-353
 // https://rules.sonarsource.com/html/tag/cwe/RSPEC-5725
 // https://cwe.mitre.org/data/definitions/353.html
-function checkScriptIntegrity(html) {
+function checkScriptIntegrityTest(html) {
     if (!html.includes("<script")) {
         return true;
     } else {
@@ -100,14 +117,14 @@ function checkScriptIntegrity(html) {
 
         // Return true if script is internal or is external with integrity
         if ((scriptTag.includes("crossorigin=\"anonymous\"") && integrity.length > 0) || nonce.length > 0 || !src.includes("http")) {
-            return checkScriptIntegrity(html.substring(html.indexOf("</script>") + 9));
+            return checkScriptIntegrityTest(html.substring(html.indexOf("</script>") + 9));
         } else {
             return false;
         }
     }
 }
 
-function checkInternalScript(html) {
+function checkInternalScriptTest(html) {
     if (!html.includes("<script")) {
         return true;
     } else {
@@ -115,7 +132,7 @@ function checkInternalScript(html) {
 
         // Return true if is external
         if (scriptInTag.length === 0) {
-            return checkInternalScript(html.substring(html.indexOf("</script>") + 9));
+            return checkInternalScriptTest(html.substring(html.indexOf("</script>") + 9));
         } else {
             return false;
         }
@@ -125,11 +142,11 @@ function checkInternalScript(html) {
 // CWE-615
 // https://rules.sonarsource.com/html/tag/cwe/RSPEC-1876
 // https://cwe.mitre.org/data/definitions/615.html
-function checkClientSideComments(html) {
+function checkClientSideCommentsTest(html) {
     return !html.includes("<!--") && !html.includes("-->");
 }
 
-function checkUntrustedLinks(html) {
+function checkUntrustedLinksTest(html) {
     if (!html.includes("href=")) {
         return true;
     } else {
@@ -138,9 +155,13 @@ function checkUntrustedLinks(html) {
         // Return true if is external
         if (!link.includes("http") || link.includes("https")) {
             // console.log(link);
-            return checkUntrustedLinks(html.substring(html.indexOf("href=\"") + 6));
+            return checkUntrustedLinksTest(html.substring(html.indexOf("href=\"") + 6));
         } else {
             return false;
         }
     }
+}
+
+function checkBasicXXSTest(html) {
+
 }

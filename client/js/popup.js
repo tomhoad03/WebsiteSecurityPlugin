@@ -1,6 +1,6 @@
-let scoreText = document.getElementById("score");
+let resultsText = document.getElementById("results");
 
-// Display the score in the extension
-chrome.storage.sync.get("score", ({score}) => {
-    scoreText.innerHTML = score;
+// Displays the results
+chrome.storage.sync.get("results", ({results}) => {
+    resultsText.innerHTML = results;
 });

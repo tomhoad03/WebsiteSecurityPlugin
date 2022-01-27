@@ -12,8 +12,6 @@ function socket() {
 
     // Listen for messages from the server.
     ws.addEventListener("open", () => {
-        console.log("We are connected.");
-
         ws.send(JSON.stringify({
             id: "window",
             href: window.location.href,
@@ -28,10 +26,13 @@ function socket() {
     ws.addEventListener("message", message => {
         const data = JSON.parse(message.data);
 
-        if (data.id === "score") {
-            let score = data.score;
-            console.log("Score = " + score);
-            chrome.storage.sync.set({score});
+        if (data.id === "results") {
+            let results = data.results;
+            chrome.storage.sync.set({results});
         }
+    });
+
+    // Perform XSS checks.
+    ws.addEventListener("xss", message => {
     });
 }

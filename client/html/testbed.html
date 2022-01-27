@@ -8,6 +8,18 @@
     </head>
 
     <body>
-        <!-- testing, testing -->
+        <!-- Testing comment. -->
+        <label for="enterName">Name:</label>
+        <input type="text" id="enterName"><br><br>
+
+        <input type="submit" id="submit" value="Submit">
+
+        <p id="nameText">Null</p>
+
+        <script>
+            document.getElementById("submit").addEventListener("click", function(){
+                document.getElementById("nameText").innerHTML = document.getElementById("enterName").value;
+            });
+        </script>
     </body>
 </html>

@@ -8,3 +8,6 @@ Script Integrity: false
 Internal Scripts: false
 Client Side Comments: false
 Untrusted Links: false
+
+Basic XSS Test: false
+

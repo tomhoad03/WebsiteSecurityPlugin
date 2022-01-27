@@ -1,10 +1,13 @@
 Domain: www.google.com
-Score: 2
+Score: 1
 
 Vulnerabilities
 
 HTTPS Protocols: true
 Script Integrity: false
 Internal Scripts: false
-Client Side Comments: true
+Client Side Comments: false
 Untrusted Links: false
+
+Basic XSS Test: false
+

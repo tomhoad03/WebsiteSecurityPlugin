@@ -1,10 +1,1 @@
-Domain: localhost
-Score: 2
-
-Vulnerabilities
-
-HTTPS Protocols: false
-Script Integrity: true
-Internal Scripts: false
-Client Side Comments: false
-Untrusted Links: true
+<ul><li>Coffee</li><li>Tea</li><li>Milk</li></ul>

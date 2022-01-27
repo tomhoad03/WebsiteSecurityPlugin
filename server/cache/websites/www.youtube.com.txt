@@ -1,10 +1,1 @@
-Domain: www.youtube.com
-Score: 2
-
-Vulnerabilities
-
-HTTPS Protocols: true
-Script Integrity: true
-Internal Scripts: false
-Client Side Comments: false
-Untrusted Links: false
+<ul><li>Domain: www.youtube.com</li><li>Score: 2</li><li>HTTPS Protocols: true</li><li>Script Integrity: true</li><li>Internal Scripts: false</li><li>Client Side Comments: false</li><li>Untrusted Links: false</li><li>Basic XSS Test: false</li></ul>

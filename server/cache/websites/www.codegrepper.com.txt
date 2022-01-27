@@ -1,13 +1,13 @@
-Domain: stackoverflow.com
-Score: 3
+Domain: www.codegrepper.com
+Score: 1
 
 Vulnerabilities
 
 HTTPS Protocols: true
 Script Integrity: false
 Internal Scripts: false
-Client Side Comments: true
-Untrusted Links: true
+Client Side Comments: false
+Untrusted Links: false
 
 Basic XSS Test: false
 
