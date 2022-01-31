@@ -1,13 +1,1 @@
-Domain: www.google.com
-Score: 1
-
-Vulnerabilities
-
-HTTPS Protocols: true
-Script Integrity: false
-Internal Scripts: false
-Client Side Comments: false
-Untrusted Links: false
-
-Basic XSS Test: false
-
+<ul><li>Domain: www.google.com</li><li>Score: 1</li><li>HTTPS Protocols: true</li><li>Script Integrity: false</li><li>Internal Scripts: false</li><li>Client Side Comments: false</li><li>Untrusted Links: false</li><li>Basic XSS Test: false</li><li>Address Auto Fill: true</li><li>Banking Auto Fill: true</li></ul>

@@ -81,6 +81,8 @@ wss.on("connection", ws => {
                             "<li>Client Side Comments: " + clientSideCommentsTest + "</li>" +
                             "<li>Untrusted Links: " + untrustedLinksTest + "</li>" +
                             "<li>Basic XSS Test: " + basicXXSTest + "</li>" +
+                            "<li>Address Auto Fill: " + data.autoFill1 + "</li>" +
+                            "<li>Banking Auto Fill: " + data.autoFill2 + "</li>" +
                         "</ul>"
 
         fs.writeFileSync(process.cwd() + "\\cache\\websites\\" + data.domain + ".txt", results);
