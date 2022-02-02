@@ -52,6 +52,10 @@ wss.on("connection", ws => {
 
             // Performs a basic XSS vulnerability check
             if (checkBasicXXSTest(data.html)) {
+                ws.send(JSON.stringify({
+                    id: "xss",
+                    message: "<SCRIPT SRC=http://xss.rocks/xss.js></SCRIPT>"
+                }));
                 basicXXSTest = true;
                 score++;
             }
@@ -165,5 +169,5 @@ function checkUntrustedLinksTest(html) {
 }
 
 function checkBasicXXSTest(html) {
-
+    return true;
 }

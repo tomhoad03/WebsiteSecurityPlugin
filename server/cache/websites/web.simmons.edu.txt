@@ -1,0 +1,1 @@
+<ul><li>Domain: web.simmons.edu</li><li>Score: 4</li><li>HTTPS Protocols: false</li><li>Script Integrity: true</li><li>Internal Scripts: true</li><li>Client Side Comments: true</li><li>Untrusted Links: false</li><li>Basic XSS Test: true</li><li>Address Auto Fill: true</li><li>Banking Auto Fill: true</li></ul>

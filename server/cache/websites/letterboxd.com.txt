@@ -1,10 +1,1 @@
-Domain: letterboxd.com
-Score: 1
-
-Vulnerabilities
-
-HTTPS Protocols: true
-Script Integrity: false
-Internal Scripts: false
-Client Side Comments: false
-Untrusted Links: false
+<ul><li>Domain: letterboxd.com</li><li>Score: 3</li><li>HTTPS Protocols: true</li><li>Script Integrity: false</li><li>Internal Scripts: false</li><li>Client Side Comments: false</li><li>Untrusted Links: true</li><li>Basic XSS Test: true</li><li>Address Auto Fill: true</li><li>Banking Auto Fill: true</li></ul>
