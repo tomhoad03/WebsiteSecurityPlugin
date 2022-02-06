@@ -89,7 +89,7 @@ wss.on("connection", ws => {
                             "<li>Banking Auto Fill: " + data.autoFill2 + "</li>" +
                         "</ul>"
 
-        fs.writeFileSync(process.cwd() + "\\cache\\websites\\" + data.domain + ".txt", results);
+        fs.writeFileSync(process.cwd() + "\\server\\cache\\websites\\" + data.domain + ".txt", results);
 
         // Update the plugin with the current security rating
         ws.send(JSON.stringify({

