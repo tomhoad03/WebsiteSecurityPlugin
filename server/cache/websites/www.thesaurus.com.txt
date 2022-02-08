@@ -1,7 +1,1 @@
-Domain: www.thesaurus.com
-Score: 2
-
-Vulnerabilities
-
-HTTPS Protocols: true
-Script Integrity: true
+<ul><li>Domain: www.thesaurus.com</li><li>Score: 3</li><li>HTTPS Protocols: true</li><li>Script Integrity: false</li><li>Internal Scripts: false</li><li>Client Side Comments: false</li><li>Untrusted Links: false</li><li>Basic XSS Test: true</li><li>Address Auto Fill: true</li><li>Banking Auto Fill: true</li><li>Cookies Security: true</li></ul>

