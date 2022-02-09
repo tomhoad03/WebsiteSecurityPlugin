@@ -1,10 +1,1 @@
-Domain: www.google.co.uk
-Score: 4
-
-Vulnerabilities
-
-HTTPS Protocols: true
-Script Integrity: true
-Internal Scripts: false
-Client Side Comments: true
-Untrusted Links: true
+<ul><li>Domain: www.google.co.uk</li><li>Score: 8</li><li>HTTPS Protocols: true</li><li>Script Integrity: true</li><li>Internal Scripts: false</li><li>Client Side Comments: true</li><li>Untrusted Links: false</li><li>Basic XSS Test: true</li><li>Address Auto Fill: true</li><li>Banking Auto Fill: true</li><li>Cookies Security: true</li><li>Timely Cookies: true</li></ul>

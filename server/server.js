@@ -1,6 +1,7 @@
 const fs = require("fs");
 const {Server} = require("ws");
 const wss = new Server({port: 8080});
+const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
 // Start a connection with the plugin
 wss.on("connection", ws => {
@@ -15,7 +16,7 @@ wss.on("connection", ws => {
 
         let score = 0;
         let httpsProtocolsTest = false, scriptIntegrityTest = false, clientSideCommentsTest = false, internalScriptTest = false, untrustedLinksTest = false,
-            basicXXSTest = false, cookieSecurity = false, timelyCookies = false;
+            basicXXSTest = false, cookieSecurity = false, timelyCookies = false, scriptSecurityTest = false;
 
         // Compute the information from the plugin
         if (data.id === "window") {
@@ -28,13 +29,14 @@ wss.on("connection", ws => {
 
             try {
                 // Check if external and internal scripts are used and secure if necessary
-                scriptIntegrityTest = checkScriptIntegrityTest(data.html);
-                internalScriptTest = checkInternalScriptTest(data.html);
+                scriptIntegrityTest = checkScriptIntegrity(data.html);
+                internalScriptTest = checkInternalScript(data.html);
+                scriptSecurityTest = checkScriptSecurity(data.html);
 
                 // CWE-353
                 // https://rules.sonarsource.com/html/tag/cwe/RSPEC-5725
                 // https://cwe.mitre.org/data/definitions/353.html
-                function checkScriptIntegrityTest(html) {
+                function checkScriptIntegrity(html) {
                     if (!html.includes("<script")) {
                         score++;
                         return true;
@@ -55,14 +57,14 @@ wss.on("connection", ws => {
 
                         // Return true if script is internal or is external with integrity
                         if ((scriptTag.includes("crossorigin=\"anonymous\"") && integrity.length > 0) || nonce.length > 0 || !src.includes("http")) {
-                            return checkScriptIntegrityTest(html.substring(html.indexOf("</script>") + 9));
+                            return checkScriptIntegrity(html.substring(html.indexOf("</script>") + 9));
                         } else {
                             return false;
                         }
                     }
                 }
 
-                function checkInternalScriptTest(html) {
+                function checkInternalScript(html) {
                     if (!html.includes("<script")) {
                         score++;
                         return true;
@@ -71,15 +73,43 @@ wss.on("connection", ws => {
 
                         // Return true if is external
                         if (scriptInTag.length === 0) {
-                            return checkInternalScriptTest(html.substring(html.indexOf("</script>") + 9));
+                            return checkInternalScript(html.substring(html.indexOf("</script>") + 9));
                         } else {
                             return false;
                         }
                     }
                 }
 
+                function checkScriptSecurity(html) {
+                    if (!html.includes("<script")) {
+                        score++;
+                        return true;
+                    } else {
+                        let scriptTag = html.substring(html.indexOf("<script"), html.indexOf(">", html.indexOf("<script")) + 1);
+
+                        if (scriptTag.includes("src=\"")) {
+                            let scriptSrc = scriptTag.substring(scriptTag.indexOf("src=\"") + 5, scriptTag.indexOf("\"", scriptTag.indexOf("src=\"") + 5));
+                            console.log(scriptSrc);
+
+                            let req = new XMLHttpRequest();
+                            req.onreadystatechange = function() {
+                                if (req.readyState === 4) {
+                                    let response = req.responseText;
+                                    console.log(response)
+                                }
+                            };
+
+                            req.open('GET', scriptSrc);
+                            req.send(null);
+                        } else {
+                            let scriptInTag = html.substring(html.indexOf(">", html.indexOf("<script")) + 1, html.indexOf("</script>", html.indexOf("<script")));
+                            console.log(scriptInTag);
+                        }
+                    }
+                }
+
                 // Check if any comments are left in the html
-                if (checkClientSideCommentsTest(data.html)) {
+                if (checkClientSideComments(data.html)) {
                     clientSideCommentsTest = true;
                     score++;
                 }
@@ -87,14 +117,14 @@ wss.on("connection", ws => {
                 // CWE-615
                 // https://rules.sonarsource.com/html/tag/cwe/RSPEC-1876
                 // https://cwe.mitre.org/data/definitions/615.html
-                function checkClientSideCommentsTest(html) {
+                function checkClientSideComments(html) {
                     return !html.includes("<!--") && !html.includes("-->");
                 }
 
                 // Check if any hyperlinks on a page are suspicious.
-                untrustedLinksTest = checkUntrustedLinksTest(data.html);
+                untrustedLinksTest = checkUntrustedLinks(data.html);
 
-                function checkUntrustedLinksTest(html) {
+                function checkUntrustedLinks(html) {
                     if (!html.includes("href=")) {
                         score++;
                         return true;
@@ -104,7 +134,7 @@ wss.on("connection", ws => {
                         // Return true if is external
                         if (!link.includes("http") || link.includes("https")) {
                             // console.log(link);
-                            return checkUntrustedLinksTest(html.substring(html.indexOf("href=\"") + 6));
+                            return checkUntrustedLinks(html.substring(html.indexOf("href=\"") + 6));
                         } else {
                             return false;
                         }
@@ -112,9 +142,9 @@ wss.on("connection", ws => {
                 }
 
                 // Performs XSS vulnerability checks.
-                basicXXSTest = checkBasicXXSTest();
+                basicXXSTest = checkBasicXXS();
 
-                function checkBasicXXSTest() {
+                function checkBasicXXS() {
                     ws.send(JSON.stringify({
                         id: "xss",
                         message: "<SCRIPT SRC=http://xss.rocks/xss.js></SCRIPT>"
