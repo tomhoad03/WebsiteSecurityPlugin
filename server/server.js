@@ -18,17 +18,9 @@ wss.on("connection", ws => {
             domain: data.domain,
             score: 0,
             scriptTest: {
-                integrity: {
-                    http: false,
-                    nonce: false,
-                    integrity: false,
-                    crossOrigin: false
-                },
-                security: {
-                    eval: false,
-                    innerHTML: false
-                },
-                internal: false
+                integrityTests: [],
+                securityTests: [],
+                internalTest: false
             },
             httpsProtocolsTest: false,
             clientSideCommentsTest: false,
@@ -43,50 +35,70 @@ wss.on("connection", ws => {
         // Compute the information from the plugin
         if (data.id === "window") {
             try {
-                securityTest.scriptIntegrityTest = checkScriptIntegrity(data.html);
-                securityTest.scriptSecurityTest = checkScriptSecurity(data.html);
-                securityTest.internalScriptTest = checkInternalScript(data.html);
+                checkScriptIntegrity(data.html);
+                checkScriptSecurity(data.html);
+                checkInternalScript();
 
                 // CWE-353
                 // https://rules.sonarsource.com/html/tag/cwe/RSPEC-5725
                 // https://cwe.mitre.org/data/definitions/353.html
                 function checkScriptIntegrity(html) {
-                    if (!html.includes("<script")) {
-                        securityTest.score++;
-                        return true;
-                    } else {
+                    if (html.includes("<script")) {
                         let scriptTag = html.substring(html.indexOf("<script"), html.indexOf(">", html.indexOf("<script")) + 1);
-                        let src = "", integrity = "", nonce = "";
+                        let scriptIntegrityTest = {
+                                http: false,
+                                nonce: false,
+                                integrity: false,
+                                crossOrigin: false
+                            }
 
-                        // Get src and integrity values
-                        if (scriptTag.includes("src=")) {
-                            src = scriptTag.substring(scriptTag.indexOf("src=") + 5, scriptTag.indexOf("\"", scriptTag.indexOf("src=") + 5))
+                        // Get crossorigin, integrity, nonce and src values
+                        if (scriptTag.includes("crossorigin=\"anonymous\"")) {
+                            scriptIntegrityTest.crossOrigin = true;
                         }
                         if (scriptTag.includes("integrity=")) {
-                            integrity = scriptTag.substring(scriptTag.indexOf("integrity=") + 11, scriptTag.indexOf("\"", scriptTag.indexOf("integrity=") + 11))
+                            let integrity = scriptTag.substring(scriptTag.indexOf("integrity=") + 11, scriptTag.indexOf("\"", scriptTag.indexOf("integrity=") + 11))
+
+                            if (integrity.length > 0) {
+                                scriptIntegrityTest.integrity = true;
+                            }
                         }
                         if (scriptTag.includes("nonce=")) {
-                            nonce = scriptTag.substring(scriptTag.indexOf("nonce=") + 7, scriptTag.indexOf("\"", scriptTag.indexOf("nonce=") + 7))
+                            let nonce = scriptTag.substring(scriptTag.indexOf("nonce=") + 7, scriptTag.indexOf("\"", scriptTag.indexOf("nonce=") + 7))
+
+                            if (nonce.length > 0) {
+                                scriptIntegrityTest.nonce = true;
+                            }
+                        }
+                        if (scriptTag.includes("src=")) {
+                            let scriptSrc = scriptTag.substring(scriptTag.indexOf("src=") + 5, scriptTag.indexOf("\"", scriptTag.indexOf("src=") + 5))
+
+                            if (scriptSrc.includes("http")) {
+                                scriptIntegrityTest.http = true;
+                            }
                         }
 
-                        // Return true if script is internal or is external with integrity
-                        if ((scriptTag.includes("crossorigin=\"anonymous\"") && integrity.length > 0) || nonce.length > 0 || !src.includes("http")) {
-                            return checkScriptIntegrity(html.substring(html.indexOf("</script>") + 9));
+                        if (securityTest.scriptTest.integrityTests !== undefined) {
+                            securityTest.scriptTest.integrityTests = securityTest.scriptTest.integrityTests.concat(scriptIntegrityTest);
                         } else {
-                            return false;
+                            securityTest.scriptTest.integrityTests = [scriptIntegrityTest];
                         }
+                        checkScriptIntegrity(html.substring(html.indexOf("</script>") + 9));
                     }
                 }
 
                 function checkScriptSecurity(html) {
-                    if (!html.includes("<script")) {
-                        securityTest.score++;
-                        return true;
-                    } else {
+                    if (html.includes("<script")) {
                         let scriptTag = html.substring(html.indexOf("<script"), html.indexOf(">", html.indexOf("<script")) + 1);
+                        let scriptSecurityTest = {
+                                external: false,
+                                eval: false,
+                                innerHTML: false
+                            }
 
                         if (scriptTag.includes("src=\"")) {
                             let scriptSrc = scriptTag.substring(scriptTag.indexOf("src=\"") + 5, scriptTag.indexOf("\"", scriptTag.indexOf("src=\"") + 5));
+                            scriptSecurityTest.external = true;
 
                             let request = new XMLHttpRequest();
                             request.onreadystatechange = function() {
@@ -95,34 +107,32 @@ wss.on("connection", ws => {
 
                                     // https://snyk.io/learn/javascript-security/
                                     if (response.includes("eval(")) {
-                                        return false;
-                                    } else if (response.includes("innerHTML")) {
-                                        return false;
+                                        scriptSecurityTest.eval = true;
+                                    }
+                                    if (response.includes("innerHTML")) {
+                                        scriptSecurityTest.innerHTML = true;
                                     }
                                 }
                             };
 
                             request.open('GET', scriptSrc);
                             request.send(null);
-                        } else {
-                            let scriptInTag = html.substring(html.indexOf(">", html.indexOf("<script")) + 1, html.indexOf("</script>", html.indexOf("<script")));
-                            console.log(scriptInTag);
                         }
+
+                        if (securityTest.scriptTest.securityTests !== undefined) {
+                            securityTest.scriptTest.securityTests = securityTest.scriptTest.securityTests.concat(scriptSecurityTest);
+                        } else {
+                            securityTest.scriptTest.securityTests = [scriptSecurityTest];
+                        }
+                        checkScriptSecurity(html.substring(html.indexOf("</script>") + 9));
                     }
                 }
 
-                function checkInternalScript(html) {
-                    if (!html.includes("<script")) {
-                        securityTest.score++;
-                        return true;
-                    } else {
-                        let scriptInTag = html.substring(html.indexOf(">", html.indexOf("<script")) + 1, html.indexOf("</script>", html.indexOf("<script")));
-
-                        // Return true if is external
-                        if (scriptInTag.length === 0) {
-                            return checkInternalScript(html.substring(html.indexOf("</script>") + 9));
-                        } else {
-                            return false;
+                function checkInternalScript() {
+                    for (let test in securityTest.scriptTest.securityTests) {
+                        if (!test.external) {
+                            securityTest.internalTest = true;
+                            break;
                         }
                     }
                 }
@@ -233,9 +243,9 @@ wss.on("connection", ws => {
                             "<li>Domain: " + securityTest.domain + "</li>" +
                             "<li>Score: " + securityTest.score + "</li>" +
                             "<li>HTTPS Protocols: " + securityTest.httpsProtocolsTest + "</li>" +
-                            "<li>Script Integrity: " + securityTest.scriptIntegrityTest + "</li>" +
-                            "<li>Script Security: " + securityTest.scriptSecurityTest + "</li>" +
-                            "<li>Internal Scripts: " + securityTest.internalScriptTest + "</li>" +
+                            "<li>Script Integrity: " + securityTest.scriptTest.integrityTests + "</li>" +
+                            "<li>Script Security: " + securityTest.scriptTest.securityTests + "</li>" +
+                            "<li>Internal Scripts: " + securityTest.scriptTest.internalTest + "</li>" +
                             "<li>Client Side Comments: " + securityTest.clientSideCommentsTest + "</li>" +
                             "<li>Untrusted Links: " + securityTest.untrustedLinksTest + "</li>" +
                             "<li>Basic XSS Test: " + securityTest.basicXXSTest + "</li>" +
