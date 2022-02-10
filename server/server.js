@@ -14,31 +14,45 @@ wss.on("connection", ws => {
                           + "Path: " + data.path + "\n";
         console.log(serverMsg);
 
-        let score = 0;
-        let httpsProtocolsTest = false, scriptIntegrityTest = false, clientSideCommentsTest = false, internalScriptTest = false, untrustedLinksTest = false,
-            basicXXSTest = false, cookieSecurity = false, timelyCookies = false, scriptSecurityTest = false;
+        let securityTest = {
+            domain: data.domain,
+            score: 0,
+            scriptTest: {
+                integrity: {
+                    http: false,
+                    nonce: false,
+                    integrity: false,
+                    crossOrigin: false
+                },
+                security: {
+                    eval: false,
+                    innerHTML: false
+                },
+                internal: false
+            },
+            httpsProtocolsTest: false,
+            clientSideCommentsTest: false,
+            untrustedLinksTest: false,
+            basicXXSTest: false,
+            addressAutoFill: data.autoFill1,
+            bankingAutoFill: data.autoFill2,
+            cookieSecurity: false,
+            timelyCookies: false
+        }
 
         // Compute the information from the plugin
         if (data.id === "window") {
-
-            // Check if the webpage uses https protocols
-            if (data.protocol === "https:") {
-                httpsProtocolsTest = true;
-                score++;
-            }
-
             try {
-                // Check if external and internal scripts are used and secure if necessary
-                scriptIntegrityTest = checkScriptIntegrity(data.html);
-                internalScriptTest = checkInternalScript(data.html);
-                scriptSecurityTest = checkScriptSecurity(data.html);
+                securityTest.scriptIntegrityTest = checkScriptIntegrity(data.html);
+                securityTest.scriptSecurityTest = checkScriptSecurity(data.html);
+                securityTest.internalScriptTest = checkInternalScript(data.html);
 
                 // CWE-353
                 // https://rules.sonarsource.com/html/tag/cwe/RSPEC-5725
                 // https://cwe.mitre.org/data/definitions/353.html
                 function checkScriptIntegrity(html) {
                     if (!html.includes("<script")) {
-                        score++;
+                        securityTest.score++;
                         return true;
                     } else {
                         let scriptTag = html.substring(html.indexOf("<script"), html.indexOf(">", html.indexOf("<script")) + 1);
@@ -64,9 +78,42 @@ wss.on("connection", ws => {
                     }
                 }
 
+                function checkScriptSecurity(html) {
+                    if (!html.includes("<script")) {
+                        securityTest.score++;
+                        return true;
+                    } else {
+                        let scriptTag = html.substring(html.indexOf("<script"), html.indexOf(">", html.indexOf("<script")) + 1);
+
+                        if (scriptTag.includes("src=\"")) {
+                            let scriptSrc = scriptTag.substring(scriptTag.indexOf("src=\"") + 5, scriptTag.indexOf("\"", scriptTag.indexOf("src=\"") + 5));
+
+                            let request = new XMLHttpRequest();
+                            request.onreadystatechange = function() {
+                                if (request.readyState === 4) { // 4 == complete
+                                    let response = request.responseText;
+
+                                    // https://snyk.io/learn/javascript-security/
+                                    if (response.includes("eval(")) {
+                                        return false;
+                                    } else if (response.includes("innerHTML")) {
+                                        return false;
+                                    }
+                                }
+                            };
+
+                            request.open('GET', scriptSrc);
+                            request.send(null);
+                        } else {
+                            let scriptInTag = html.substring(html.indexOf(">", html.indexOf("<script")) + 1, html.indexOf("</script>", html.indexOf("<script")));
+                            console.log(scriptInTag);
+                        }
+                    }
+                }
+
                 function checkInternalScript(html) {
                     if (!html.includes("<script")) {
-                        score++;
+                        securityTest.score++;
                         return true;
                     } else {
                         let scriptInTag = html.substring(html.indexOf(">", html.indexOf("<script")) + 1, html.indexOf("</script>", html.indexOf("<script")));
@@ -80,38 +127,16 @@ wss.on("connection", ws => {
                     }
                 }
 
-                function checkScriptSecurity(html) {
-                    if (!html.includes("<script")) {
-                        score++;
-                        return true;
-                    } else {
-                        let scriptTag = html.substring(html.indexOf("<script"), html.indexOf(">", html.indexOf("<script")) + 1);
-
-                        if (scriptTag.includes("src=\"")) {
-                            let scriptSrc = scriptTag.substring(scriptTag.indexOf("src=\"") + 5, scriptTag.indexOf("\"", scriptTag.indexOf("src=\"") + 5));
-                            console.log(scriptSrc);
-
-                            let req = new XMLHttpRequest();
-                            req.onreadystatechange = function() {
-                                if (req.readyState === 4) {
-                                    let response = req.responseText;
-                                    console.log(response)
-                                }
-                            };
-
-                            req.open('GET', scriptSrc);
-                            req.send(null);
-                        } else {
-                            let scriptInTag = html.substring(html.indexOf(">", html.indexOf("<script")) + 1, html.indexOf("</script>", html.indexOf("<script")));
-                            console.log(scriptInTag);
-                        }
-                    }
+                // Check if the webpage uses https protocols
+                if (data.protocol === "https:") {
+                    securityTest.httpsProtocolsTest = true;
+                    securityTest.score++;
                 }
 
                 // Check if any comments are left in the html
                 if (checkClientSideComments(data.html)) {
-                    clientSideCommentsTest = true;
-                    score++;
+                    securityTest.clientSideCommentsTest = true;
+                    securityTest.score++;
                 }
 
                 // CWE-615
@@ -122,11 +147,11 @@ wss.on("connection", ws => {
                 }
 
                 // Check if any hyperlinks on a page are suspicious.
-                untrustedLinksTest = checkUntrustedLinks(data.html);
+                securityTest.untrustedLinksTest = checkUntrustedLinks(data.html);
 
                 function checkUntrustedLinks(html) {
                     if (!html.includes("href=")) {
-                        score++;
+                        securityTest.score++;
                         return true;
                     } else {
                         let link = html.substring(html.indexOf("href=\"") + 6, html.indexOf("\"", html.indexOf("href=\"") + 6));
@@ -142,28 +167,28 @@ wss.on("connection", ws => {
                 }
 
                 // Performs XSS vulnerability checks.
-                basicXXSTest = checkBasicXXS();
+                securityTest.basicXXSTest = checkBasicXXS();
 
                 function checkBasicXXS() {
                     ws.send(JSON.stringify({
                         id: "xss",
                         message: "<SCRIPT SRC=http://xss.rocks/xss.js></SCRIPT>"
                     }));
-                    score++;
+                    securityTest.score++;
                     return true;
                 }
 
                 // Checks if information is autofilled.
                 if (data.autoFill1) {
-                    score++;
+                    securityTest.score++;
                 }
                 if (data.autoFill2) {
-                    score++;
+                    securityTest.score++;
                 }
 
                 // Checks the security of the cookies
-                cookieSecurity = checkCookieSecurity(data.cookies);
-                timelyCookies = checkCookieTimeliness(data.cookies);
+                securityTest.cookieSecurity = checkCookieSecurity(data.cookies);
+                securityTest.timelyCookies = checkCookieTimeliness(data.cookies);
 
                 function checkCookieSecurity(cookies) {
                     cookies.forEach(cookie => {
@@ -171,7 +196,7 @@ wss.on("connection", ws => {
                             return false;
                         }
                     });
-                    score++;
+                    securityTest.score++;
                     return true;
                 }
 
@@ -181,7 +206,7 @@ wss.on("connection", ws => {
                             return false;
                         }
                     });
-                    score++;
+                    securityTest.score++;
                     return true;
                 }
             } catch(err) {
@@ -205,18 +230,19 @@ wss.on("connection", ws => {
         }
 
         const results = "<ul>" +
-                            "<li>Domain: " + data.domain + "</li>" +
-                            "<li>Score: " + score + "</li>" +
-                            "<li>HTTPS Protocols: " + httpsProtocolsTest + "</li>" +
-                            "<li>Script Integrity: " + scriptIntegrityTest + "</li>" +
-                            "<li>Internal Scripts: " + internalScriptTest + "</li>" +
-                            "<li>Client Side Comments: " + clientSideCommentsTest + "</li>" +
-                            "<li>Untrusted Links: " + untrustedLinksTest + "</li>" +
-                            "<li>Basic XSS Test: " + basicXXSTest + "</li>" +
-                            "<li>Address Auto Fill: " + data.autoFill1 + "</li>" +
-                            "<li>Banking Auto Fill: " + data.autoFill2 + "</li>" +
-                            "<li>Cookies Security: " + cookieSecurity + "</li>" +
-                            "<li>Timely Cookies: " + timelyCookies + "</li>" +
+                            "<li>Domain: " + securityTest.domain + "</li>" +
+                            "<li>Score: " + securityTest.score + "</li>" +
+                            "<li>HTTPS Protocols: " + securityTest.httpsProtocolsTest + "</li>" +
+                            "<li>Script Integrity: " + securityTest.scriptIntegrityTest + "</li>" +
+                            "<li>Script Security: " + securityTest.scriptSecurityTest + "</li>" +
+                            "<li>Internal Scripts: " + securityTest.internalScriptTest + "</li>" +
+                            "<li>Client Side Comments: " + securityTest.clientSideCommentsTest + "</li>" +
+                            "<li>Untrusted Links: " + securityTest.untrustedLinksTest + "</li>" +
+                            "<li>Basic XSS Test: " + securityTest.basicXXSTest + "</li>" +
+                            "<li>Address Auto Fill: " + securityTest.addressAutoFill + "</li>" +
+                            "<li>Banking Auto Fill: " + securityTest.bankingAutoFill + "</li>" +
+                            "<li>Cookies Security: " + securityTest.cookieSecurity + "</li>" +
+                            "<li>Timely Cookies: " + securityTest.timelyCookies + "</li>" +
                         "</ul>"
 
         fs.writeFileSync(process.cwd() + "\\cache\\websites\\" + data.domain + ".txt", results);
@@ -224,7 +250,7 @@ wss.on("connection", ws => {
         // Update the plugin with the current security rating
         ws.send(JSON.stringify({
             id: "results",
-            score: score,
+            score: securityTest.score,
             results: results
         }));
     })
