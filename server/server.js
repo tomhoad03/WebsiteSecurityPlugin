@@ -46,16 +46,18 @@ wss.on("connection", ws => {
                     if (html.includes("<script")) {
                         let scriptTag = html.substring(html.indexOf("<script"), html.indexOf(">", html.indexOf("<script")) + 1);
                         let scriptIntegrityTest = {
-                                http: false,
+                                external: false,
                                 nonce: false,
                                 integrity: false,
                                 crossOrigin: false
                             }
 
-                        // Get crossorigin, integrity, nonce and src values
+                        // is the referenced script cross-origin anonymous? - there is no exchange of user credentials
                         if (scriptTag.includes("crossorigin=\"anonymous\"")) {
                             scriptIntegrityTest.crossOrigin = true;
                         }
+
+                        // does the referenced script have integrity? - used to check if the script gets manipulated
                         if (scriptTag.includes("integrity=")) {
                             let integrity = scriptTag.substring(scriptTag.indexOf("integrity=") + 11, scriptTag.indexOf("\"", scriptTag.indexOf("integrity=") + 11))
 
@@ -63,6 +65,8 @@ wss.on("connection", ws => {
                                 scriptIntegrityTest.integrity = true;
                             }
                         }
+
+                        // does the referenced script have a nonce? - a cryptographic value to prevent attackers accessing content attributes
                         if (scriptTag.includes("nonce=")) {
                             let nonce = scriptTag.substring(scriptTag.indexOf("nonce=") + 7, scriptTag.indexOf("\"", scriptTag.indexOf("nonce=") + 7))
 
@@ -70,11 +74,13 @@ wss.on("connection", ws => {
                                 scriptIntegrityTest.nonce = true;
                             }
                         }
+
+                        // does the external script use http or https protocols?
                         if (scriptTag.includes("src=")) {
                             let scriptSrc = scriptTag.substring(scriptTag.indexOf("src=") + 5, scriptTag.indexOf("\"", scriptTag.indexOf("src=") + 5))
 
                             if (scriptSrc.includes("http")) {
-                                scriptIntegrityTest.http = true;
+                                scriptIntegrityTest.external = true;
                             }
                         }
 
@@ -91,23 +97,33 @@ wss.on("connection", ws => {
                     if (html.includes("<script")) {
                         let scriptTag = html.substring(html.indexOf("<script"), html.indexOf(">", html.indexOf("<script")) + 1);
                         let scriptSecurityTest = {
-                                external: false,
                                 eval: false,
+                                execScript: false,
+                                timeout: false,
+                                interval: false,
                                 innerHTML: false
                             }
 
                         if (scriptTag.includes("src=\"")) {
                             let scriptSrc = scriptTag.substring(scriptTag.indexOf("src=\"") + 5, scriptTag.indexOf("\"", scriptTag.indexOf("src=\"") + 5));
-                            scriptSecurityTest.external = true;
-
                             let request = new XMLHttpRequest();
+
                             request.onreadystatechange = function() {
                                 if (request.readyState === 4) { // 4 == complete
                                     let response = request.responseText;
 
-                                    // https://snyk.io/learn/javascript-security/
+                                    // all of these things could allow dynamic execution of code
                                     if (response.includes("eval(")) {
                                         scriptSecurityTest.eval = true;
+                                    }
+                                    if (response.includes("window.execScript")) {
+                                        scriptSecurityTest.execScript = true;
+                                    }
+                                    if (response.includes("setTimeout")) {
+                                        scriptSecurityTest.timeout = true;
+                                    }
+                                    if (response.includes("setInterval")) {
+                                        scriptSecurityTest.interval = true;
                                     }
                                     if (response.includes("innerHTML")) {
                                         scriptSecurityTest.innerHTML = true;
@@ -128,22 +144,24 @@ wss.on("connection", ws => {
                     }
                 }
 
+                // are any of the scripts internal?
                 function checkInternalScript() {
-                    for (let test in securityTest.scriptTest.securityTests) {
+                    for (let test in securityTest.scriptTest.integrityTests) {
                         if (!test.external) {
                             securityTest.internalTest = true;
                             break;
                         }
                     }
+                    securityTest.score++;
                 }
 
-                // Check if the webpage uses https protocols
+                // does the webpage uses https protocols?
                 if (data.protocol === "https:") {
                     securityTest.httpsProtocolsTest = true;
                     securityTest.score++;
                 }
 
-                // Check if any comments are left in the html
+                // are any comments are left in the html?
                 if (checkClientSideComments(data.html)) {
                     securityTest.clientSideCommentsTest = true;
                     securityTest.score++;
@@ -156,7 +174,7 @@ wss.on("connection", ws => {
                     return !html.includes("<!--") && !html.includes("-->");
                 }
 
-                // Check if any hyperlinks on a page are suspicious.
+                // are any hyperlinks on the page suspicious?
                 securityTest.untrustedLinksTest = checkUntrustedLinks(data.html);
 
                 function checkUntrustedLinks(html) {
@@ -166,7 +184,7 @@ wss.on("connection", ws => {
                     } else {
                         let link = html.substring(html.indexOf("href=\"") + 6, html.indexOf("\"", html.indexOf("href=\"") + 6));
 
-                        // Return true if is external
+                        // return true if is external
                         if (!link.includes("http") || link.includes("https")) {
                             // console.log(link);
                             return checkUntrustedLinks(html.substring(html.indexOf("href=\"") + 6));
@@ -236,6 +254,9 @@ wss.on("connection", ws => {
 
             SQL Injection, XSS, insecure cookies, insecure session/session vulnerabilities, insecure file upload, CSRF, internal information/information leakage,
             parameter manipulation, application logic, out of date software, file inclusion, open redirects, brute force
+
+            https://snyk.io/learn/javascript-security/
+            https://www.youtube.com/watch?v=mGUsCAWwLGg
              */
         }
 
