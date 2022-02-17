@@ -213,6 +213,18 @@ wss.on("connection", ws => {
                 if (data.autoFill2) {
                     securityTest.score++;
                 }
+                if (data.safeBrowsing1) {
+                    securityTest.score++;
+                }
+                if (!data.safeBrowsing2) {
+                    securityTest.score++;
+                }
+                if (data.noTracking) {
+                    securityTest.score++;
+                }
+                if (data.auditing) {
+                    securityTest.score++;
+                }
 
                 // Checks the security of the cookies
                 securityTest.cookieSecurity = checkCookieSecurity(data.cookies);

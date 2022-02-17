@@ -1,17 +1,45 @@
-let addressAutoFill = false, bankingAutoFill = false;
+let addressAutoFill = false, bankingAutoFill = false, safeBrowsing = false, safeBrowsingReporting = false, doNotTrack = false, hyperlinkAuditing = false;
 let cookieData;
 
-// checks if addresses get auto filled
+// checks if addresses get autofilled
 chrome.privacy.services.autofillAddressEnabled.get({}, function(details) {
     if (details.value) {
         addressAutoFill = true;
     }
 });
 
-// checks if bank details get auto filled
+// checks if bank details get autofilled
 chrome.privacy.services.autofillCreditCardEnabled.get({}, function(details) {
     if (details.value) {
         bankingAutoFill = true;
+    }
+});
+
+// checks if safe browsing is enabled
+chrome.privacy.services.safeBrowsingEnabled.get({}, function(details) {
+    if (details.value) {
+        safeBrowsing = true;
+    }
+});
+
+// checks if safe browsing blocks a page
+chrome.privacy.services.safeBrowsingReportingEnabled.get({}, function(details) {
+    if (details.value) {
+        safeBrowsingReporting = true;
+    }
+});
+
+// checks if chrome allows 'do not track'
+chrome.privacy.services.doNotTrackEnabled.get({}, function(details) {
+    if (details.value) {
+        doNotTrack = true;
+    }
+});
+
+// checks if chrome audit pings hyperlinks
+chrome.privacy.services.hyperlinkAuditingEnabled.get({}, function(details) {
+    if (details.value) {
+        hyperlinkAuditing = true;
     }
 });
 
@@ -55,6 +83,10 @@ function socket(addressAutoFill, bankingAutoFill, cookieData) {
             protocol: window.location.protocol,
             autoFill1: addressAutoFill,
             autoFill2: bankingAutoFill,
+            safeBrowsing1: safeBrowsing,
+            safeBrowsing2: safeBrowsingReporting,
+            noTracking: doNotTrack,
+            auditing: hyperlinkAuditing,
             cookies: cookieData.filter(cookie => cookie.domain.includes(window.location.hostname)),
             html: document.getElementsByTagName('html')[0].innerHTML,
         }));
