@@ -1,18 +1,21 @@
 let addressAutoFill = false, bankingAutoFill = false;
 let cookieData;
 
+// checks if addresses get auto filled
 chrome.privacy.services.autofillAddressEnabled.get({}, function(details) {
     if (details.value) {
         addressAutoFill = true;
     }
 });
 
+// checks if bank details get auto filled
 chrome.privacy.services.autofillCreditCardEnabled.get({}, function(details) {
     if (details.value) {
         bankingAutoFill = true;
     }
 });
 
+// gets all the cookies stored on the browser
 chrome.cookies.getAll({}, function(details) {
     cookieData = details;
 });
@@ -60,15 +63,15 @@ function socket(addressAutoFill, bankingAutoFill, cookieData) {
     ws.addEventListener("message", message => {
         const data = JSON.parse(message.data);
 
-        // Update the security score.
+        // update the security score
         if (data.id === "results") {
             let results = data.results;
             chrome.storage.sync.set({results});
 
-        // Perform XSS checks.
+        // perform XSS checks
         } else if (data.id === "xss") {
             try {
-                let input = document.getElementById("enterName");
+                let input = document.getElementById("enterName"); // ! change to look for all input boxes !
                 input.value = data.message;
             } catch (err) {
                 console.log("no inputs");
@@ -76,3 +79,14 @@ function socket(addressAutoFill, bankingAutoFill, cookieData) {
         }
     });
 }
+
+// ad blocker - manifest v2 version
+/*
+chrome.declarativeNetRequest.onBeforeRequest.addListener(function(details) {
+        return {
+            cancel: true
+        }
+    },
+    {urls: ["*://*.zedo.com/*"]},
+    ["blocking"]
+);*/
