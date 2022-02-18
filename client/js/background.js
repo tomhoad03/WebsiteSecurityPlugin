@@ -71,7 +71,7 @@ chrome.tabs.onActivated.addListener(async () => {
 })
 
 function socket(addressAutoFill, bankingAutoFill, cookieData) {
-    let ws = new WebSocket("ws://localhost:8080");
+    let ws = new WebSocket("ws://localhost:8110");
 
     // Listen for messages from the server.
     ws.addEventListener("open", () => {

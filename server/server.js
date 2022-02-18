@@ -1,9 +1,18 @@
 const fs = require("fs");
 const {Server} = require("ws");
-const wss = new Server({port: 8080});
+const wss = new Server({port: 8110});
 const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+const express = require('express');
+const app = express();
 
-// Start a connection with the plugin
+// npm install node-sqlite
+
+// start a connection with the database
+let database = app.listen(8111, function () {
+    console.log('Database is running...');
+});
+
+// start a connection with the plugin
 wss.on("connection", ws => {
     // Listen for messages from the plugin
     ws.on("message", message => {
@@ -297,4 +306,32 @@ wss.on("connection", ws => {
             results: results
         }));
     })
+});
+
+app.get('/', function (req, res) {
+    let sql = require("node-sqlite");
+
+    // config for your database
+    let config = {
+        user: 'tdh1g19',
+        password: 'db-tdh1g19',
+        server: 'localhost',
+        database: 'SecurityDB'
+    };
+
+    // connect to your database
+    sql.connect(config, function (err) {
+        if (err) console.log(err);
+
+        // create Request object
+        let request = new sql.Request();
+
+        // query to the database and get the records
+        request.query('select * from Student', function (err, recordset) {
+            if (err) console.log(err)
+
+            // send records as a response
+            res.send(recordset);
+        });
+    });
 });
