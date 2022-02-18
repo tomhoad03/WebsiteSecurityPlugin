@@ -5,11 +5,16 @@ const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 const express = require('express');
 const app = express();
 
-// npm install node-sqlite
-
 // start a connection with the database
 let database = app.listen(8111, function () {
-    console.log('Database is running...');
+    const sqlite3 = require('sqlite3');
+
+    let db = new sqlite3.Database('./database/security.db', sqlite3.OPEN_READWRITE, (err) => {
+        if (err) {
+            console.error(err.message);
+        }
+        console.log('Connected to the security database.');
+    });
 });
 
 // start a connection with the plugin
@@ -306,32 +311,4 @@ wss.on("connection", ws => {
             results: results
         }));
     })
-});
-
-app.get('/', function (req, res) {
-    let sql = require("node-sqlite");
-
-    // config for your database
-    let config = {
-        user: 'tdh1g19',
-        password: 'db-tdh1g19',
-        server: 'localhost',
-        database: 'SecurityDB'
-    };
-
-    // connect to your database
-    sql.connect(config, function (err) {
-        if (err) console.log(err);
-
-        // create Request object
-        let request = new sql.Request();
-
-        // query to the database and get the records
-        request.query('select * from Student', function (err, recordset) {
-            if (err) console.log(err)
-
-            // send records as a response
-            res.send(recordset);
-        });
-    });
 });

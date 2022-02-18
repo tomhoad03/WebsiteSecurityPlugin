@@ -2,7 +2,12 @@
 <project version="4">
   <component name="DdlMappings">
     <mapping uuid="a327e726-b08d-4b8d-91e4-9726531800ce" name="securityDB.sqlite Mapping">
-      <data-sources db="38a2738a-4ea0-4d00-a316-f677a84a84b7" ddl="c7871228-7a9d-46d1-827b-45bdccc7b003" />
+      <data-sources db="38a2738a-4ea0-4d00-a316-f677a84a84b7" ddl="3ced0a86-ea26-4ed6-aa75-e2aec45325d1" />
+      <scope>
+        <node kind="database" negative="1">
+          <node kind="schema" negative="1" />
+        </node>
+      </scope>
     </mapping>
   </component>
 </project>
