@@ -1,1 +1,0 @@
-<ul><li>Domain: developer.chrome.com</li><li>Score: 7</li><li>HTTPS Protocols: true</li><li>Script Integrity: false</li><li>Internal Scripts: false</li><li>Client Side Comments: false</li><li>Untrusted Links: true</li><li>Basic XSS Test: true</li><li>Address Auto Fill: true</li><li>Banking Auto Fill: true</li><li>Cookies Security: true</li><li>Timely Cookies: true</li></ul>

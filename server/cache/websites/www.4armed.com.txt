@@ -1,7 +1,0 @@
-Domain: www.4armed.com
-Score: 2
-
-Vulnerabilities
-
-HTTPS Protocols: true
-Script Integrity: true

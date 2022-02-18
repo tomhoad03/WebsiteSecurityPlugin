@@ -1,1 +1,0 @@
-<ul><li>Domain: undefined</li><li>Score: 0</li><li>HTTPS Protocols: false</li><li>Script Integrity: false</li><li>Internal Scripts: false</li><li>Client Side Comments: false</li><li>Untrusted Links: false</li><li>Basic XSS Test: false</li><li>Address Auto Fill: undefined</li><li>Banking Auto Fill: undefined</li></ul>

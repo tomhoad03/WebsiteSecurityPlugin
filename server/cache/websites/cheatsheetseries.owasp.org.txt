@@ -1,1 +1,0 @@
-<ul><li>Domain: cheatsheetseries.owasp.org</li><li>Score: 4</li><li>HTTPS Protocols: true</li><li>Script Integrity: true</li><li>Internal Scripts: false</li><li>Client Side Comments: true</li><li>Untrusted Links: false</li><li>Basic XSS Test: true</li><li>Address Auto Fill: true</li><li>Banking Auto Fill: true</li></ul>

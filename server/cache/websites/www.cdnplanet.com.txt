@@ -1,8 +1,0 @@
-Domain: www.cdnplanet.com
-Score: 2
-
-Vulnerabilities
-
-HTTPS Protocols: true
-Script Integrity: false
-Client Side Comments: true

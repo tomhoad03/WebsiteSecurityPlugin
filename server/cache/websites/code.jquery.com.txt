@@ -1,8 +1,0 @@
-Domain: code.jquery.com
-Score: 1
-
-Vulnerabilities
-
-HTTPS Protocols: true
-Script Integrity: false
-Client Side Comments: false

@@ -1,9 +1,0 @@
-Domain: login.microsoftonline.com
-Score: 2
-
-Vulnerabilities
-
-HTTPS Protocols: true
-Script Integrity: true
-Internal Scripts: false
-Client Side Comments: false

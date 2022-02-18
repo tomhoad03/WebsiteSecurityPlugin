@@ -1,1 +1,0 @@
-<ul><li>Domain: en.wikipedia.org</li><li>Score: 5</li><li>HTTPS Protocols: true</li><li>Script Integrity: true</li><li>Internal Scripts: false</li><li>Client Side Comments: false</li><li>Untrusted Links: true</li><li>Basic XSS Test: true</li><li>Address Auto Fill: true</li><li>Banking Auto Fill: true</li><li>Cookies Security: true</li></ul>

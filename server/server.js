@@ -2,18 +2,17 @@ const fs = require("fs");
 const {Server} = require("ws");
 const wss = new Server({port: 8110});
 const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
-const express = require('express');
-const app = express();
+const app = require("express");
 
 // start a connection with the database
-let database = app.listen(8111, function () {
-    const sqlite3 = require('sqlite3');
+let database = app().listen(8111, function () {
+    const sqlite3 = require("sqlite3");
 
-    let db = new sqlite3.Database('./database/security.db', sqlite3.OPEN_READWRITE, (err) => {
+    let db = new sqlite3.Database("security.db", sqlite3.OPEN_READWRITE, (err) => {
         if (err) {
             console.error(err.message);
         }
-        console.log('Connected to the security database.');
+        console.log("Connected to the security database.");
     });
 });
 

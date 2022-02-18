@@ -1,7 +1,0 @@
-Domain: rules.sonarsource.com
-Score: 1
-
-Vulnerabilities
-
-HTTPS Protocols: true
-Script Integrity: false
