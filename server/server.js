@@ -307,17 +307,28 @@ wss.on("connection", ws => {
             "</ul>"
 
         //fs.writeFileSync(process.cwd() + "\\cache\\websites\\" + data.domain + ".txt", results);
+        let domainCount = 0;
+        const quote = "\'";
 
         database.serialize(() => {
-            const quote = "\'";
-
-            database.each("INSERT INTO Domains (domainName) VALUES (" + quote + data.domain + quote + ")", (err, row) => {
+            database.each("SELECT COUNT(*) From Domains WHERE (domainName = " + quote + data.domain + quote + ")", (err, row) => {
                 if (err) {
                     console.error(err.message);
                 }
-                console.log(row.id + "\t" + row.name);
+                domainCount = Object.values(JSON.parse(JSON.stringify(row)))[0]
             });
         });
+
+        if (domainCount === 0) {
+            database.serialize(() => {
+                database.each("INSERT INTO Domains (domainName) VALUES (" + quote + data.domain + quote + ")", (err, row) => {
+                    if (err) {
+                        console.error(err.message);
+                    }
+                    console.log(row.id + "\t" + row.name);
+                });
+            });
+        }
 
         // Update the plugin with the current security rating
         ws.send(JSON.stringify({
