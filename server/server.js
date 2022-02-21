@@ -1,14 +1,16 @@
 const fs = require("fs");
 const {Server} = require("ws");
-const wss = new Server({port: 8110});
+const wss = new Server({port: 8100});
 const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 const app = require("express");
+const sqlite3 = require("sqlite3");
+let database;
 
 // start a connection with the database
-let database = app().listen(8111, function () {
+let dbServer = app().listen(8110, function () {
     const sqlite3 = require("sqlite3");
 
-    let db = new sqlite3.Database("security.db", sqlite3.OPEN_READWRITE, (err) => {
+    database = new sqlite3.Database("security.db", sqlite3.OPEN_READWRITE, (err) => {
         if (err) {
             console.error(err.message);
         }
@@ -18,13 +20,16 @@ let database = app().listen(8111, function () {
 
 // start a connection with the plugin
 wss.on("connection", ws => {
+    console.log("Connected to the plugin.")
+
     // Listen for messages from the plugin
     ws.on("message", message => {
         const data = JSON.parse(message);
 
         const serverMsg = "\nHref: " + data.href + "\n"
-                          + "Domain: " + data.domain + "\n"
-                          + "Path: " + data.path + "\n";
+            + "Domain: " + data.domain + "\n"
+            + "Path: " + data.path + "\n";
+
         console.log(serverMsg);
 
         let securityTest = {
@@ -59,11 +64,11 @@ wss.on("connection", ws => {
                     if (html.includes("<script")) {
                         let scriptTag = html.substring(html.indexOf("<script"), html.indexOf(">", html.indexOf("<script")) + 1);
                         let scriptIntegrityTest = {
-                                external: false,
-                                nonce: false,
-                                integrity: false,
-                                crossOrigin: false
-                            }
+                            external: false,
+                            nonce: false,
+                            integrity: false,
+                            crossOrigin: false
+                        }
 
                         // is the referenced script cross-origin anonymous? - there is no exchange of user credentials
                         if (scriptTag.includes("crossorigin=\"anonymous\"")) {
@@ -110,12 +115,12 @@ wss.on("connection", ws => {
                     if (html.includes("<script")) {
                         let scriptTag = html.substring(html.indexOf("<script"), html.indexOf(">", html.indexOf("<script")) + 1);
                         let scriptSecurityTest = {
-                                eval: false,
-                                execScript: false,
-                                timeout: false,
-                                interval: false,
-                                innerHTML: false
-                            }
+                            eval: false,
+                            execScript: false,
+                            timeout: false,
+                            interval: false,
+                            innerHTML: false
+                        }
 
                         if (scriptTag.includes("src=\"")) {
                             let scriptSrc = scriptTag.substring(scriptTag.indexOf("src=\"") + 5, scriptTag.indexOf("\"", scriptTag.indexOf("src=\"") + 5));
@@ -263,7 +268,7 @@ wss.on("connection", ws => {
                     return true;
                 }
             } catch(err) {
-                console.log(err);
+                console.error(err);
             }
 
             /*
@@ -286,22 +291,33 @@ wss.on("connection", ws => {
         }
 
         const results = "<ul>" +
-                            "<li>Domain: " + securityTest.domain + "</li>" +
-                            "<li>Score: " + securityTest.score + "</li>" +
-                            "<li>HTTPS Protocols: " + securityTest.httpsProtocolsTest + "</li>" +
-                            "<li>Script Integrity: " + securityTest.scriptTest.integrityTests + "</li>" +
-                            "<li>Script Security: " + securityTest.scriptTest.securityTests + "</li>" +
-                            "<li>Internal Scripts: " + securityTest.scriptTest.internalTest + "</li>" +
-                            "<li>Client Side Comments: " + securityTest.clientSideCommentsTest + "</li>" +
-                            "<li>Untrusted Links: " + securityTest.untrustedLinksTest + "</li>" +
-                            "<li>Basic XSS Test: " + securityTest.basicXXSTest + "</li>" +
-                            "<li>Address Auto Fill: " + securityTest.addressAutoFill + "</li>" +
-                            "<li>Banking Auto Fill: " + securityTest.bankingAutoFill + "</li>" +
-                            "<li>Cookies Security: " + securityTest.cookieSecurity + "</li>" +
-                            "<li>Timely Cookies: " + securityTest.timelyCookies + "</li>" +
-                        "</ul>"
+            "<li>Domain: " + securityTest.domain + "</li>" +
+            "<li>Score: " + securityTest.score + "</li>" +
+            "<li>HTTPS Protocols: " + securityTest.httpsProtocolsTest + "</li>" +
+            "<li>Script Integrity: " + securityTest.scriptTest.integrityTests + "</li>" +
+            "<li>Script Security: " + securityTest.scriptTest.securityTests + "</li>" +
+            "<li>Internal Scripts: " + securityTest.scriptTest.internalTest + "</li>" +
+            "<li>Client Side Comments: " + securityTest.clientSideCommentsTest + "</li>" +
+            "<li>Untrusted Links: " + securityTest.untrustedLinksTest + "</li>" +
+            "<li>Basic XSS Test: " + securityTest.basicXXSTest + "</li>" +
+            "<li>Address Auto Fill: " + securityTest.addressAutoFill + "</li>" +
+            "<li>Banking Auto Fill: " + securityTest.bankingAutoFill + "</li>" +
+            "<li>Cookies Security: " + securityTest.cookieSecurity + "</li>" +
+            "<li>Timely Cookies: " + securityTest.timelyCookies + "</li>" +
+            "</ul>"
 
-        fs.writeFileSync(process.cwd() + "\\cache\\websites\\" + data.domain + ".txt", results);
+        //fs.writeFileSync(process.cwd() + "\\cache\\websites\\" + data.domain + ".txt", results);
+
+        database.serialize(() => {
+            const quote = "\'";
+
+            database.each("INSERT INTO Domains (domainName) VALUES (" + quote + data.domain + quote + ")", (err, row) => {
+                if (err) {
+                    console.error(err.message);
+                }
+                console.log(row.id + "\t" + row.name);
+            });
+        });
 
         // Update the plugin with the current security rating
         ws.send(JSON.stringify({
@@ -311,3 +327,4 @@ wss.on("connection", ws => {
         }));
     })
 });
+

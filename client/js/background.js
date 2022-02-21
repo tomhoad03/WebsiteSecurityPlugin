@@ -16,32 +16,24 @@ chrome.privacy.services.autofillCreditCardEnabled.get({}, function(details) {
 });
 
 // checks if safe browsing is enabled
-chrome.privacy.services.safeBrowsingEnabled.get({}, function(details) {
-    if (details.value) {
-        safeBrowsing = true;
-    }
-});
+if (chrome.privacy.services.safeBrowsingEnabled) {
+    safeBrowsing = true;
+}
 
 // checks if safe browsing blocks a page
-chrome.privacy.services.safeBrowsingReportingEnabled.get({}, function(details) {
-    if (details.value) {
-        safeBrowsingReporting = true;
-    }
-});
+if (chrome.privacy.services.safeBrowsingExtendedReportingEnabled) {
+    safeBrowsingReporting = true;
+}
 
 // checks if chrome allows 'do not track'
-chrome.privacy.services.doNotTrackEnabled.get({}, function(details) {
-    if (details.value) {
-        doNotTrack = true;
-    }
-});
+if (chrome.privacy.services.doNotTrackEnabled) {
+    doNotTrack = true;
+}
 
 // checks if chrome audit pings hyperlinks
-chrome.privacy.services.hyperlinkAuditingEnabled.get({}, function(details) {
-    if (details.value) {
-        hyperlinkAuditing = true;
-    }
-});
+if (chrome.privacy.services.hyperlinkAuditingEnabled) {
+    hyperlinkAuditing = true;
+}
 
 // gets all the cookies stored on the browser
 chrome.cookies.getAll({}, function(details) {
@@ -52,10 +44,12 @@ chrome.cookies.getAll({}, function(details) {
 chrome.webNavigation.onDOMContentLoaded.addListener(async () => {
     let [tab] = await chrome.tabs.query({active: true, currentWindow: true});
 
+    console.log([addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingReporting, doNotTrack, hyperlinkAuditing, cookieData]);
+
     chrome.scripting.executeScript({
         target: { tabId: tab.id },
         function: socket,
-        args: [addressAutoFill, bankingAutoFill, cookieData]
+        args: [addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingReporting, doNotTrack, hyperlinkAuditing, cookieData]
     });
 });
 
@@ -63,15 +57,17 @@ chrome.webNavigation.onDOMContentLoaded.addListener(async () => {
 chrome.tabs.onActivated.addListener(async () => {
     let [tab] = await chrome.tabs.query({active: true, currentWindow: true});
 
+    console.log([addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingReporting, doNotTrack, hyperlinkAuditing, cookieData]);
+
     chrome.scripting.executeScript({
         target: { tabId: tab.id },
         function: socket,
-        args: [addressAutoFill, bankingAutoFill, cookieData]
+        args: [addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingReporting, doNotTrack, hyperlinkAuditing, cookieData]
     });
 })
 
-function socket(addressAutoFill, bankingAutoFill, cookieData) {
-    let ws = new WebSocket("ws://localhost:8110");
+function socket(addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingReporting, doNotTrack, hyperlinkAuditing, cookieData) {
+    let ws = new WebSocket("ws://localhost:8100");
 
     // Listen for messages from the server.
     ws.addEventListener("open", () => {
@@ -106,7 +102,7 @@ function socket(addressAutoFill, bankingAutoFill, cookieData) {
                 let input = document.getElementById("enterName"); // ! change to look for all input boxes !
                 input.value = data.message;
             } catch (err) {
-                console.log("no inputs");
+                console.error("no inputs");
             }
         }
     });
