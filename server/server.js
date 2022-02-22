@@ -36,11 +36,7 @@ wss.on("connection", ws => {
             domain: data.domain,
             path: data.path,
             score: 0,
-            scriptTest: {
-                integrityTests: [],
-                securityTests: [],
-                internalTest: false
-            },
+            scriptTests: [],
             httpsProtocolsTest: false,
             clientSideCommentsTest: false,
             untrustedLinksTest: false,
@@ -54,26 +50,31 @@ wss.on("connection", ws => {
         // Compute the information from the plugin
         if (data.id === "window") {
             try {
-                checkScriptIntegrity(data.html);
                 checkScriptSecurity(data.html);
                 checkInternalScript();
 
                 // CWE-353
                 // https://rules.sonarsource.com/html/tag/cwe/RSPEC-5725
                 // https://cwe.mitre.org/data/definitions/353.html
-                function checkScriptIntegrity(html) {
+                function checkScriptSecurity(html) {
                     if (html.includes("<script")) {
                         let scriptTag = html.substring(html.indexOf("<script"), html.indexOf(">", html.indexOf("<script")) + 1);
-                        let scriptIntegrityTest = {
+                        let scriptTest = {
+                            script: scriptTag,
                             external: false,
                             nonce: false,
                             integrity: false,
-                            crossOrigin: false
+                            crossOrigin: false,
+                            eval: false,
+                            execScript: false,
+                            timeout: false,
+                            interval: false,
+                            innerHTML: false
                         }
 
                         // is the referenced script cross-origin anonymous? - there is no exchange of user credentials
                         if (scriptTag.includes("crossorigin=\"anonymous\"")) {
-                            scriptIntegrityTest.crossOrigin = true;
+                            scriptTest.crossOrigin = true;
                         }
 
                         // does the referenced script have integrity? - used to check if the script gets manipulated
@@ -81,7 +82,7 @@ wss.on("connection", ws => {
                             let integrity = scriptTag.substring(scriptTag.indexOf("integrity=") + 11, scriptTag.indexOf("\"", scriptTag.indexOf("integrity=") + 11))
 
                             if (integrity.length > 0) {
-                                scriptIntegrityTest.integrity = true;
+                                scriptTest.integrity = true;
                             }
                         }
 
@@ -90,7 +91,7 @@ wss.on("connection", ws => {
                             let nonce = scriptTag.substring(scriptTag.indexOf("nonce=") + 7, scriptTag.indexOf("\"", scriptTag.indexOf("nonce=") + 7))
 
                             if (nonce.length > 0) {
-                                scriptIntegrityTest.nonce = true;
+                                scriptTest.nonce = true;
                             }
                         }
 
@@ -99,32 +100,9 @@ wss.on("connection", ws => {
                             let scriptSrc = scriptTag.substring(scriptTag.indexOf("src=") + 5, scriptTag.indexOf("\"", scriptTag.indexOf("src=") + 5))
 
                             if (scriptSrc.includes("http")) {
-                                scriptIntegrityTest.external = true;
+                                scriptTest.external = true;
                             }
-                        }
 
-                        if (securityTest.scriptTest.integrityTests !== undefined) {
-                            securityTest.scriptTest.integrityTests = securityTest.scriptTest.integrityTests.concat(scriptIntegrityTest);
-                        } else {
-                            securityTest.scriptTest.integrityTests = [scriptIntegrityTest];
-                        }
-                        checkScriptIntegrity(html.substring(html.indexOf("</script>") + 9));
-                    }
-                }
-
-                function checkScriptSecurity(html) {
-                    if (html.includes("<script")) {
-                        let scriptTag = html.substring(html.indexOf("<script"), html.indexOf(">", html.indexOf("<script")) + 1);
-                        let scriptSecurityTest = {
-                            eval: false,
-                            execScript: false,
-                            timeout: false,
-                            interval: false,
-                            innerHTML: false
-                        }
-
-                        if (scriptTag.includes("src=\"")) {
-                            let scriptSrc = scriptTag.substring(scriptTag.indexOf("src=\"") + 5, scriptTag.indexOf("\"", scriptTag.indexOf("src=\"") + 5));
                             let request = new XMLHttpRequest();
 
                             request.onreadystatechange = function() {
@@ -133,19 +111,19 @@ wss.on("connection", ws => {
 
                                     // all of these things could allow dynamic execution of code
                                     if (response.includes("eval(")) {
-                                        scriptSecurityTest.eval = true;
+                                        scriptTest.eval = true;
                                     }
                                     if (response.includes("window.execScript")) {
-                                        scriptSecurityTest.execScript = true;
+                                        scriptTest.execScript = true;
                                     }
                                     if (response.includes("setTimeout")) {
-                                        scriptSecurityTest.timeout = true;
+                                        scriptTest.timeout = true;
                                     }
                                     if (response.includes("setInterval")) {
-                                        scriptSecurityTest.interval = true;
+                                        scriptTest.interval = true;
                                     }
                                     if (response.includes("innerHTML")) {
-                                        scriptSecurityTest.innerHTML = true;
+                                        scriptTest.innerHTML = true;
                                     }
                                 }
                             };
@@ -154,10 +132,10 @@ wss.on("connection", ws => {
                             request.send(null);
                         }
 
-                        if (securityTest.scriptTest.securityTests !== undefined) {
-                            securityTest.scriptTest.securityTests = securityTest.scriptTest.securityTests.concat(scriptSecurityTest);
+                        if (securityTest.scriptTests !== undefined) {
+                            securityTest.scriptTests = securityTest.scriptTests.concat(scriptTest);
                         } else {
-                            securityTest.scriptTest.securityTests = [scriptSecurityTest];
+                            securityTest.scriptTests = [scriptTest];
                         }
                         checkScriptSecurity(html.substring(html.indexOf("</script>") + 9));
                     }
@@ -165,9 +143,8 @@ wss.on("connection", ws => {
 
                 // are any of the scripts internal?
                 function checkInternalScript() {
-                    for (let test in securityTest.scriptTest.integrityTests) {
-                        if (!test.external) {
-                            securityTest.internalTest = true;
+                    for (let scriptTest in securityTest.scriptTests) {
+                        if (!scriptTest.external) {
                             break;
                         }
                     }
@@ -295,9 +272,6 @@ wss.on("connection", ws => {
             "<li>Domain: " + securityTest.domain + "</li>" +
             "<li>Score: " + securityTest.score + "</li>" +
             "<li>HTTPS Protocols: " + securityTest.httpsProtocolsTest + "</li>" +
-            "<li>Script Integrity: " + securityTest.scriptTest.integrityTests + "</li>" +
-            "<li>Script Security: " + securityTest.scriptTest.securityTests + "</li>" +
-            "<li>Internal Scripts: " + securityTest.scriptTest.internalTest + "</li>" +
             "<li>Client Side Comments: " + securityTest.clientSideCommentsTest + "</li>" +
             "<li>Untrusted Links: " + securityTest.untrustedLinksTest + "</li>" +
             "<li>Basic XSS Test: " + securityTest.basicXXSTest + "</li>" +
@@ -343,7 +317,7 @@ wss.on("connection", ws => {
 
                             // log new domain name access
                             database.serialize(() => {
-                                database.each("INSERT INTO DomainEntries (domainId, path, href, score) VALUES (" + quote + data.domain + quote +
+                                database.each("INSERT INTO DomainEntries (domainId, path, href, score) VALUES (" + quote + domainId + quote +
                                                                                                                 ", " + quote + data.path + quote +
                                                                                                                 ", " + quote + data.href + quote +
                                                                                                                 ", " + quote + securityTest.score + quote + ")", (err, row) => {
