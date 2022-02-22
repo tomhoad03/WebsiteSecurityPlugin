@@ -34,6 +34,7 @@ wss.on("connection", ws => {
 
         let securityTest = {
             domain: data.domain,
+            path: data.path,
             score: 0,
             scriptTest: {
                 integrityTests: [],
@@ -306,31 +307,58 @@ wss.on("connection", ws => {
             "<li>Timely Cookies: " + securityTest.timelyCookies + "</li>" +
             "</ul>"
 
-        //fs.writeFileSync(process.cwd() + "\\cache\\websites\\" + data.domain + ".txt", results);
         let domainCount = 0;
         const quote = "\'";
 
+        // check if the domain name has already been registered
         database.serialize(() => {
             database.each("SELECT COUNT(*) From Domains WHERE (domainName = " + quote + data.domain + quote + ")", (err, row) => {
                 if (err) {
                     console.error(err.message);
                 }
-                domainCount = Object.values(JSON.parse(JSON.stringify(row)))[0]
+                domainCount = Object.values(JSON.parse(JSON.stringify(row)))[0];
+
+                // register a new domain name
+                if (domainCount === 0) {
+                    database.serialize(() => {
+                        database.each("INSERT INTO Domains (domainName) VALUES (" + quote + data.domain + quote + ")", (err, row) => {
+                            if (err) {
+                                console.error(err.message);
+                            }
+                            logNewAccess();
+                        });
+                    });
+                } else {
+                    logNewAccess();
+                }
+
+                // get domainId
+                function logNewAccess() {
+                    database.serialize(() => {
+                        database.each("SELECT domainId FROM Domains WHERE domainName = " + quote + data.domain + quote, (err, row) => {
+                            if (err) {
+                                console.error(err.message);
+                            }
+                            let domainId = Object.values(JSON.parse(JSON.stringify(row)))[0];
+
+                            // log new domain name access
+                            database.serialize(() => {
+                                database.each("INSERT INTO DomainEntries (domainId, path, href, score) VALUES (" + quote + data.domain + quote +
+                                                                                                                ", " + quote + data.path + quote +
+                                                                                                                ", " + quote + data.href + quote +
+                                                                                                                ", " + quote + securityTest.score + quote + ")", (err, row) => {
+                                    if (err) {
+                                        console.error(err.message);
+                                    }
+                                });
+                            });
+                        });
+                    });
+                }
             });
         });
 
-        if (domainCount === 0) {
-            database.serialize(() => {
-                database.each("INSERT INTO Domains (domainName) VALUES (" + quote + data.domain + quote + ")", (err, row) => {
-                    if (err) {
-                        console.error(err.message);
-                    }
-                    console.log(row.id + "\t" + row.name);
-                });
-            });
-        }
-
-        // Update the plugin with the current security rating
+        // update the plugin with the current security rating
         ws.send(JSON.stringify({
             id: "results",
             score: securityTest.score,
