@@ -60,7 +60,7 @@ wss.on("connection", ws => {
                     if (html.includes("<script")) {
                         let scriptTag = html.substring(html.indexOf("<script"), html.indexOf(">", html.indexOf("<script")) + 1);
                         let scriptTest = {
-                            script: scriptTag,
+                            href: "null",
                             external: false,
                             nonce: false,
                             integrity: false,
@@ -98,6 +98,7 @@ wss.on("connection", ws => {
                         // does the external script use http or https protocols?
                         if (scriptTag.includes("src=")) {
                             let scriptSrc = scriptTag.substring(scriptTag.indexOf("src=") + 5, scriptTag.indexOf("\"", scriptTag.indexOf("src=") + 5))
+                            scriptTest.href = scriptSrc;
 
                             if (scriptSrc.includes("http")) {
                                 scriptTest.external = true;
@@ -325,10 +326,12 @@ wss.on("connection", ws => {
                                                                                                                 ", " + quote + data.href + quote +
                                                                                                                 ", " + quote + securityTest.score + quote + ")");
 
+                                // log new script
                                 for (let scriptTest in securityTest.scriptTests) {
-                                    let test = Object.values(JSON.parse(JSON.stringify(scriptTest.script)));
-                                    console.log(test);
-                                    // database.run("INSERT INTO Scripts (href) VALUES (" + quote + JSON.stringify(scriptTest.script) + quote + ")");
+                                    let script = securityTest.scriptTests[scriptTest];
+                                    if (script.href !== "null") {
+                                        database.run("INSERT INTO Scripts (href) VALUES (" + quote + script.href + quote + ")");
+                                    }
                                 }
 
 
