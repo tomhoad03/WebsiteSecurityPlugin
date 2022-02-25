@@ -313,19 +313,29 @@ wss.on("connection", ws => {
                             if (err) {
                                 console.error(err.message);
                             }
-                            let domainId = Object.values(JSON.parse(JSON.stringify(row)))[0];
+                            let domainId1 = Object.values(JSON.parse(JSON.stringify(row)))[0];
+                            console.log("test1");
 
                             // log new domain name access
                             database.serialize(() => {
-                                database.each("INSERT INTO DomainEntries (domainId, path, href, score) VALUES (" + quote + domainId + quote +
+                                let domainId;
+
+                                database.run("INSERT INTO DomainEntries (domainId, path, href, score) VALUES (" + quote + domainId1 + quote +
                                                                                                                 ", " + quote + data.path + quote +
                                                                                                                 ", " + quote + data.href + quote +
-                                                                                                                ", " + quote + securityTest.score + quote + ")", (err, row) => {
-                                    if (err) {
-                                        console.error(err.message);
-                                    }
-                                });
+                                                                                                                ", " + quote + securityTest.score + quote + ")");
+
+                                for (let scriptTest in securityTest.scriptTests) {
+                                    let test = Object.values(JSON.parse(JSON.stringify(scriptTest.script)));
+                                    console.log(test);
+                                    // database.run("INSERT INTO Scripts (href) VALUES (" + quote + JSON.stringify(scriptTest.script) + quote + ")");
+                                }
+
+
+                                // database.run("INSERT INTO Links (href) VALUES (" + quote + domainId1 + quote + ")");
                             });
+
+                            console.log("test5");
                         });
                     });
                 }
