@@ -37,9 +37,10 @@ wss.on("connection", ws => {
             path: data.path,
             score: 0,
             scriptTests: [],
+            linkTests: [],
             httpsProtocolsTest: false,
             clientSideCommentsTest: false,
-            untrustedLinksTest: false,
+            untrustedLinksTest: true,
             basicXXSTest: false,
             addressAutoFill: data.autoFill1,
             bankingAutoFill: data.autoFill2,
@@ -51,6 +52,7 @@ wss.on("connection", ws => {
         if (data.id === "window") {
             try {
                 checkScriptSecurity(data.html);
+                checkLinkSecurity(data.html);
                 checkInternalScript();
 
                 // CWE-353
@@ -142,6 +144,30 @@ wss.on("connection", ws => {
                     }
                 }
 
+                function checkLinkSecurity(html) {
+                    if (html.includes("href=")) {
+                        let link = html.substring(html.indexOf("href=\"") + 6, html.indexOf("\"", html.indexOf("href=\"") + 6));
+                        let linkTest = {
+                            href: link,
+                            trusted: false
+                        }
+
+                        // return true if is external
+                        if (!link.includes("http") || link.includes("https")) {
+                            linkTest.trusted = true;
+                        } else {
+                            securityTest.untrustedLinksTest = false;
+                        }
+
+                        if (securityTest.linkTests !== undefined) {
+                            securityTest.linkTests = securityTest.linkTests.concat(linkTest);
+                        } else {
+                            securityTest.linkTests = [linkTest];
+                        }
+                        checkLinkSecurity(html.substring(html.indexOf("href=\"") + 6));
+                    }
+                }
+
                 // are any of the scripts internal?
                 function checkInternalScript() {
                     for (let scriptTest in securityTest.scriptTests) {
@@ -169,26 +195,6 @@ wss.on("connection", ws => {
                 // https://cwe.mitre.org/data/definitions/615.html
                 function checkClientSideComments(html) {
                     return !html.includes("<!--") && !html.includes("-->");
-                }
-
-                // are any hyperlinks on the page suspicious?
-                securityTest.untrustedLinksTest = checkUntrustedLinks(data.html);
-
-                function checkUntrustedLinks(html) {
-                    if (!html.includes("href=")) {
-                        securityTest.score++;
-                        return true;
-                    } else {
-                        let link = html.substring(html.indexOf("href=\"") + 6, html.indexOf("\"", html.indexOf("href=\"") + 6));
-
-                        // return true if is external
-                        if (!link.includes("http") || link.includes("https")) {
-                            // console.log(link);
-                            return checkUntrustedLinks(html.substring(html.indexOf("href=\"") + 6));
-                        } else {
-                            return false;
-                        }
-                    }
                 }
 
                 // Performs XSS vulnerability checks.
@@ -334,6 +340,13 @@ wss.on("connection", ws => {
                                     }
                                 }
 
+                                // log new link
+                                for (let linkTest in securityTest.linkTests) {
+                                    let link = securityTest.linkTests[linkTest];
+                                    if (link.href !== "null") {
+                                        database.run("INSERT INTO Links (href) VALUES (" + quote + link.href + quote + ")");
+                                    }
+                                }
 
                                 // database.run("INSERT INTO Links (href) VALUES (" + quote + domainId1 + quote + ")");
                             });
