@@ -365,13 +365,37 @@ wss.on("connection", ws => {
                                 }
 
                                 // log new link
-                                /*
                                 for (let linkTest in securityTest.linkTests) {
                                     let link = securityTest.linkTests[linkTest];
                                     if (link.href !== "null") {
-                                        database.run("INSERT INTO Links (href) VALUES (" + quote + link.href + quote + ")");
+                                        database.each("SELECT COUNT(*) From Links WHERE (href = " + quote + link.href + quote + ")", (err, row) => {
+                                            if (err) {
+                                                console.error(err.message);
+                                            }
+                                            let linkCount = Object.values(JSON.parse(JSON.stringify(row)))[0];
+
+                                            database.serialize(() => {
+                                                if (linkCount === 0) {
+                                                    database.run("INSERT INTO Links (href) VALUES (" + quote + link.href + quote + ")");
+                                                }
+
+                                                database.serialize(() => {
+                                                    database.each("SELECT linkId FROM Links WHERE href = " + quote + link.href + quote, (err, row) => {
+                                                        if (err) {
+                                                            console.error(err.message);
+                                                        }
+                                                        let linkId1 = Object.values(JSON.parse(JSON.stringify(row)))[0];
+
+                                                        database.serialize(() => {
+                                                            database.run("INSERT INTO linkEntries (domainEntryId, linkId) VALUES (" + quote + domainEntry + quote +
+                                                                ", " + quote + linkId1 + quote + ")");
+                                                        });
+                                                    });
+                                                });
+                                            });
+                                        });
                                     }
-                                }*/
+                                }
                             });
                         });
                     });
