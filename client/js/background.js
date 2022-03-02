@@ -44,12 +44,15 @@ chrome.cookies.getAll({}, function(details) {
 chrome.webNavigation.onDOMContentLoaded.addListener(async () => {
     let [tab] = await chrome.tabs.query({active: true, currentWindow: true});
 
-    console.log([addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingReporting, doNotTrack, hyperlinkAuditing, cookieData]);
+    // console.log([addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingReporting, doNotTrack, hyperlinkAuditing, cookieData]);
 
     chrome.scripting.executeScript({
         target: { tabId: tab.id },
         function: socket,
         args: [addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingReporting, doNotTrack, hyperlinkAuditing, cookieData]
+    });
+    chrome.scripting.executeScript({
+        file: "jquery-3.6.0.min.js"
     });
 });
 
@@ -57,12 +60,15 @@ chrome.webNavigation.onDOMContentLoaded.addListener(async () => {
 chrome.tabs.onActivated.addListener(async () => {
     let [tab] = await chrome.tabs.query({active: true, currentWindow: true});
 
-    console.log([addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingReporting, doNotTrack, hyperlinkAuditing, cookieData]);
+    // console.log([addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingReporting, doNotTrack, hyperlinkAuditing, cookieData]);
 
     chrome.scripting.executeScript({
         target: { tabId: tab.id },
         function: socket,
         args: [addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingReporting, doNotTrack, hyperlinkAuditing, cookieData]
+    });
+    chrome.scripting.executeScript({
+        file: "jquery-3.6.0.min.js"
     });
 })
 
@@ -96,25 +102,15 @@ function socket(addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingRepo
             let results = data.results;
             chrome.storage.sync.set({results});
 
-        // perform XSS checks
-        } else if (data.id === "xss") {
-            try {
-                let input = document.getElementById("enterName"); // ! change to look for all input boxes !
-                input.value = data.message;
-            } catch (err) {
-                console.error("no inputs");
-            }
+            console.log("recieved");
+
+            let url = './popup.js';
+            $.getScript(url, function(){
+                $(document).ready(function(){
+                    console.log("refresh");
+                    refresh();
+                });
+            });
         }
     });
 }
-
-// ad blocker - manifest v2 version
-/*
-chrome.declarativeNetRequest.onBeforeRequest.addListener(function(details) {
-        return {
-            cancel: true
-        }
-    },
-    {urls: ["*://*.zedo.com/*"]},
-    ["blocking"]
-);*/

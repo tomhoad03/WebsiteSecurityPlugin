@@ -1,13 +1,11 @@
-const fs = require("fs");
 const {Server} = require("ws");
 const wss = new Server({port: 8100});
 const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 const app = require("express");
-const sqlite3 = require("sqlite3");
 let database;
 
 // start a connection with the database
-let dbServer = app().listen(8110, function () {
+app().listen(8110, function () {
     const sqlite3 = require("sqlite3");
 
     database = new sqlite3.Database("security.db", sqlite3.OPEN_READWRITE, (err) => {
@@ -300,13 +298,11 @@ wss.on("connection", ws => {
 
                 // register a new domain name
                 if (domainCount === 0) {
-                    database.serialize(() => {
-                        database.each("INSERT INTO Domains (domainName) VALUES (" + quote + data.domain + quote + ")", (err, row) => {
-                            if (err) {
-                                console.error(err.message);
-                            }
-                            logNewAccess();
-                        });
+                    database.each("INSERT INTO Domains (domainName) VALUES (" + quote + data.domain + quote + ")", (err, row) => {
+                        if (err) {
+                            console.error(err.message);
+                        }
+                        logNewAccess();
                     });
                 } else {
                     logNewAccess();
@@ -334,6 +330,7 @@ wss.on("connection", ws => {
                                 // log new script
                                 for (let scriptTest in securityTest.scriptTests) {
                                     let script = securityTest.scriptTests[scriptTest];
+
                                     if (script.href !== "null") {
                                         database.each("SELECT COUNT(*) From Scripts WHERE (href = " + quote + script.href + quote + ")", (err, row) => {
                                             if (err) {
@@ -341,24 +338,18 @@ wss.on("connection", ws => {
                                             }
                                             let scriptCount = Object.values(JSON.parse(JSON.stringify(row)))[0];
 
-                                            database.serialize(() => {
-                                                if (scriptCount === 0) {
-                                                    database.run("INSERT INTO Scripts (href) VALUES (" + quote + script.href + quote + ")");
+                                            if (scriptCount === 0) {
+                                                database.run("INSERT INTO Scripts (href) VALUES (" + quote + script.href + quote + ")");
+                                            }
+
+                                            database.each("SELECT scriptId FROM Scripts WHERE href = " + quote + script.href + quote, (err, row) => {
+                                                if (err) {
+                                                    console.error(err.message);
                                                 }
+                                                let scriptId1 = Object.values(JSON.parse(JSON.stringify(row)))[0];
 
-                                                database.serialize(() => {
-                                                    database.each("SELECT scriptId FROM Scripts WHERE href = " + quote + script.href + quote, (err, row) => {
-                                                        if (err) {
-                                                            console.error(err.message);
-                                                        }
-                                                        let scriptId1 = Object.values(JSON.parse(JSON.stringify(row)))[0];
-
-                                                        database.serialize(() => {
-                                                            database.run("INSERT INTO ScriptEntries (domainEntryId, scriptId) VALUES (" + quote + domainEntry + quote +
-                                                                ", " + quote + scriptId1 + quote + ")");
-                                                        });
-                                                    });
-                                                });
+                                                database.run("INSERT INTO ScriptEntries (domainEntryId, scriptId) VALUES (" + quote + domainEntry + quote +
+                                                                                                                          ", " + quote + scriptId1 + quote + ")");
                                             });
                                         });
                                     }
@@ -367,6 +358,7 @@ wss.on("connection", ws => {
                                 // log new link
                                 for (let linkTest in securityTest.linkTests) {
                                     let link = securityTest.linkTests[linkTest];
+
                                     if (link.href !== "null") {
                                         database.each("SELECT COUNT(*) From Links WHERE (href = " + quote + link.href + quote + ")", (err, row) => {
                                             if (err) {
@@ -374,24 +366,18 @@ wss.on("connection", ws => {
                                             }
                                             let linkCount = Object.values(JSON.parse(JSON.stringify(row)))[0];
 
-                                            database.serialize(() => {
-                                                if (linkCount === 0) {
-                                                    database.run("INSERT INTO Links (href) VALUES (" + quote + link.href + quote + ")");
+                                            if (linkCount === 0) {
+                                                database.run("INSERT INTO Links (href) VALUES (" + quote + link.href + quote + ")");
+                                            }
+
+                                            database.each("SELECT linkId FROM Links WHERE href = " + quote + link.href + quote, (err, row) => {
+                                                if (err) {
+                                                    console.error(err.message);
                                                 }
+                                                let linkId1 = Object.values(JSON.parse(JSON.stringify(row)))[0];
 
-                                                database.serialize(() => {
-                                                    database.each("SELECT linkId FROM Links WHERE href = " + quote + link.href + quote, (err, row) => {
-                                                        if (err) {
-                                                            console.error(err.message);
-                                                        }
-                                                        let linkId1 = Object.values(JSON.parse(JSON.stringify(row)))[0];
-
-                                                        database.serialize(() => {
-                                                            database.run("INSERT INTO linkEntries (domainEntryId, linkId) VALUES (" + quote + domainEntry + quote +
-                                                                ", " + quote + linkId1 + quote + ")");
-                                                        });
-                                                    });
-                                                });
+                                                database.run("INSERT INTO linkEntries (domainEntryId, linkId) VALUES (" + quote + domainEntry + quote +
+                                                                                                                      ", " + quote + linkId1 + quote + ")");
                                             });
                                         });
                                     }

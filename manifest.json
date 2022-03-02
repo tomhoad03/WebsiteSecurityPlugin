@@ -1,12 +1,12 @@
 {
   "name": "Website Security Plugin",
   "description": "An accessible and modular security tool.",
-  "version": "1.1",
+  "version": "1.2",
   "manifest_version": 3,
   "background": {
     "service_worker": "/client/js/background.js"
   },
-  "permissions": ["storage", "activeTab", "scripting", "tabs", "webNavigation", "privacy", "cookies", "declarativeNetRequest"],
+  "permissions": ["storage", "activeTab", "scripting", "tabs", "webNavigation", "privacy", "cookies"],
   "host_permissions": ["http://*/*", "https://*/*"],
   "action": {
     "default_title": "Web Browser Security Plugin",
