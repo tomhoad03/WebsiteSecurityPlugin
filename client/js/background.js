@@ -51,9 +51,6 @@ chrome.webNavigation.onDOMContentLoaded.addListener(async () => {
         function: socket,
         args: [addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingReporting, doNotTrack, hyperlinkAuditing, cookieData]
     });
-    chrome.scripting.executeScript({
-        file: "jquery-3.6.0.min.js"
-    });
 });
 
 // Everytime the user changes tabs, relay the new information to the server
@@ -66,9 +63,6 @@ chrome.tabs.onActivated.addListener(async () => {
         target: { tabId: tab.id },
         function: socket,
         args: [addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingReporting, doNotTrack, hyperlinkAuditing, cookieData]
-    });
-    chrome.scripting.executeScript({
-        file: "jquery-3.6.0.min.js"
     });
 })
 
@@ -101,16 +95,8 @@ function socket(addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingRepo
         if (data.id === "results") {
             let results = data.results;
             chrome.storage.sync.set({results});
-
-            console.log("recieved");
-
-            let url = './popup.js';
-            $.getScript(url, function(){
-                $(document).ready(function(){
-                    console.log("refresh");
-                    refresh();
-                });
-            });
         }
     });
 }
+
+// google pages playing up, move away from recursive link and script checks
