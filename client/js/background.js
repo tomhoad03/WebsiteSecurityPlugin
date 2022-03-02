@@ -44,8 +44,6 @@ chrome.cookies.getAll({}, function(details) {
 chrome.webNavigation.onDOMContentLoaded.addListener(async () => {
     let [tab] = await chrome.tabs.query({active: true, currentWindow: true});
 
-    // console.log([addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingReporting, doNotTrack, hyperlinkAuditing, cookieData]);
-
     chrome.scripting.executeScript({
         target: { tabId: tab.id },
         function: socket,
@@ -57,8 +55,6 @@ chrome.webNavigation.onDOMContentLoaded.addListener(async () => {
 chrome.tabs.onActivated.addListener(async () => {
     let [tab] = await chrome.tabs.query({active: true, currentWindow: true});
 
-    // console.log([addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingReporting, doNotTrack, hyperlinkAuditing, cookieData]);
-
     chrome.scripting.executeScript({
         target: { tabId: tab.id },
         function: socket,
@@ -68,6 +64,9 @@ chrome.tabs.onActivated.addListener(async () => {
 
 function socket(addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingReporting, doNotTrack, hyperlinkAuditing, cookieData) {
     let ws = new WebSocket("ws://localhost:8100");
+
+    let currentHref = window.location.href;
+    chrome.storage.sync.set({currentHref});
 
     // Listen for messages from the server.
     ws.addEventListener("open", () => {
@@ -94,7 +93,9 @@ function socket(addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingRepo
         // update the security score
         if (data.id === "results") {
             let results = data.results;
+            let resultsHref = data.href;
             chrome.storage.sync.set({results});
+            chrome.storage.sync.set({resultsHref});
         }
     });
 }

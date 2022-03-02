@@ -392,6 +392,7 @@ wss.on("connection", ws => {
         // update the plugin with the current security rating
         ws.send(JSON.stringify({
             id: "results",
+            href: "" + data.href + "",
             score: securityTest.score,
             results: results
         }));
