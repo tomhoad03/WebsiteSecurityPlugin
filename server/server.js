@@ -147,15 +147,32 @@ wss.on("connection", ws => {
                         let link = html.substring(html.indexOf("href=\"") + 6, html.indexOf("\"", html.indexOf("href=\"") + 6));
                         let linkTest = {
                             href: link,
-                            trusted: false
+                            trusted: false,
+                            googleTrust: false,
                         }
 
-                        // return true if is external
                         if (!link.includes("http") || link.includes("https")) {
                             linkTest.trusted = true;
                         } else {
                             securityTest.untrustedLinksTest = false;
                         }
+
+                        // check if google trusts it
+                        // https://console.cloud.google.com/home/dashboard?project=web-security-plugin
+                        // AIzaSyApajNfcS7Nr5ukcJapAwok8SXKNLgifec
+                        // https://github.com/muety/safe-browse-url-lookup
+                        /*
+                        const lookup = require('safe-browse-url-lookup')({ apiKey: 'AIzaSyApajNfcS7Nr5ukcJapAwok8SXKNLgifec' });
+
+                        lookup.checkSingle(link)
+                            .then(isMalicious => {
+                                linkTest.googleTrust = isMalicious;
+                            })
+                            .catch(err => {
+                                console.log('Something went wrong.');
+                                console.log(err);
+                            });*/
+                        // not feasible, too many links to check and keeps disconnecting
 
                         if (securityTest.linkTests !== undefined) {
                             securityTest.linkTests = securityTest.linkTests.concat(linkTest);

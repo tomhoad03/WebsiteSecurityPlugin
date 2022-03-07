@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "dependencies": {
     "express": "^4.17.3",
+    "node-fetch": "^3.2.2",
+    "request-promise": "^4.2.6",
+    "safe-browse-url-lookup": "^0.1.1",
     "sqlite3": "^5.0.2",
     "websocket": "^1.0.34",
     "ws": "^8.5.0",
