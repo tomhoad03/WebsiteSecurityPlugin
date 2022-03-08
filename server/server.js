@@ -366,20 +366,6 @@ wss.on("connection", ws => {
              */
         }
 
-        const results = "<ul>" +
-            "<li>Domain: " + securityTest.domain + "</li>" +
-            "<li>Score: " + securityTest.score + "</li>" +
-            "<li>HTTPS Protocols: " + securityTest.httpsProtocolsTest + "</li>" +
-            "<li>Client Side Comments: " + securityTest.clientSideCommentsTest + "</li>" +
-            "<li>Untrusted Links: " + securityTest.untrustedLinksTest + "</li>" +
-            "<li>Basic XSS Test: " + securityTest.basicXXSTest + "</li>" +
-            "<li>Address Auto Fill: " + securityTest.addressAutoFill + "</li>" +
-            "<li>Banking Auto Fill: " + securityTest.bankingAutoFill + "</li>" +
-            "<li>Cookies Security: " + securityTest.cookieSecurity + "</li>" +
-            "<li>Timely Cookies: " + securityTest.timelyCookies + "</li>" +
-            "<li>Safe Browsing API: " + securityTest.safeBrowsing + "</li>" +
-            "</ul>"
-
         const quote = "\'";
 
         // check if the domain name has already been registered
@@ -472,6 +458,28 @@ wss.on("connection", ws => {
 
                                                 database.run("INSERT INTO linkEntries (domainEntryId, linkId) VALUES (" + quote + domainEntry + quote +
                                                                                                                       ", " + quote + linkId1 + quote + ")");
+
+                                                const results = "<ul>" +
+                                                    "<li>Domain: " + securityTest.domain + "</li>" +
+                                                    "<li>Score: " + securityTest.score + "</li>" +
+                                                    "<li>HTTPS Protocols: " + securityTest.httpsProtocolsTest + "</li>" +
+                                                    "<li>Client Side Comments: " + securityTest.clientSideCommentsTest + "</li>" +
+                                                    "<li>Untrusted Links: " + securityTest.untrustedLinksTest + "</li>" +
+                                                    "<li>Basic XSS Test: " + securityTest.basicXXSTest + "</li>" +
+                                                    "<li>Address Auto Fill: " + securityTest.addressAutoFill + "</li>" +
+                                                    "<li>Banking Auto Fill: " + securityTest.bankingAutoFill + "</li>" +
+                                                    "<li>Cookies Security: " + securityTest.cookieSecurity + "</li>" +
+                                                    "<li>Timely Cookies: " + securityTest.timelyCookies + "</li>" +
+                                                    "<li>Safe Browsing API: " + securityTest.safeBrowsing + "</li>" +
+                                                    "</ul>"
+
+                                                // update the plugin with the current security rating
+                                                ws.send(JSON.stringify({
+                                                    id: "results",
+                                                    href: "" + data.href + "",
+                                                    score: securityTest.score,
+                                                    results: results
+                                                }));
                                             });
                                         });
                                     }
@@ -482,14 +490,6 @@ wss.on("connection", ws => {
                 }
             });
         });
-
-        // update the plugin with the current security rating
-        ws.send(JSON.stringify({
-            id: "results",
-            href: "" + data.href + "",
-            score: securityTest.score,
-            results: results
-        }));
     })
 });
 
