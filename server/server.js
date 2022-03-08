@@ -254,15 +254,38 @@ wss.on("connection", ws => {
                 // check if google trusts it
                 // https://console.cloud.google.com/home/dashboard?project=web-security-plugin
                 // AIzaSyApajNfcS7Nr5ukcJapAwok8SXKNLgifec
-                // https://github.com/muety/safe-browse-url-lookup
 
-                lookup.checkSingle(data.href)
-                    .then(secure => {
-                        console.log("Secure");
-                    })
-                    .catch(error => {
-                        console.log("Insecure");
-                    });
+                let safeBrowsingFetch = new XMLHttpRequest();
+                safeBrowsingFetch.onreadystatechange = function() {
+                    if (this.readyState === 4 && this.status === 200) {
+                        if (this.response === undefined) {
+                            console.log("secure");
+                            console.error(this.response);
+                        } else {
+                            console.log("insecure");
+                            console.error(this.response);
+                        }
+                    }
+                };
+
+                let body = {
+                    "client": {
+                        "clientId":      "tomhoad",
+                        "clientVersion": "1.0.0"
+                    },
+                    "threatInfo": {
+                        "threatTypes":      ["THREAT_TYPE_UNSPECIFIED", "MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE", "POTENTIALLY_HARMFUL_APPLICATION"],
+                        "platformTypes":    ["WINDOWS"],
+                        "threatEntryTypes": ["URL"],
+                        "threatEntries": [
+                            {"url": data.href}
+                        ]
+                    }
+                }
+
+                safeBrowsingFetch.open("POST", "https://safebrowsing.googleapis.com/v4/threatMatches:find?key=AIzaSyApajNfcS7Nr5ukcJapAwok8SXKNLgifec", true);
+                safeBrowsingFetch.setRequestHeader("Content-type", "application/json");
+                safeBrowsingFetch.send(JSON.stringify(body));
             } catch(err) {
                 console.error(err);
             }
