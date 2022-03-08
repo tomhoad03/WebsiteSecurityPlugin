@@ -2,7 +2,6 @@ const {Server} = require("ws");
 const wss = new Server({port: 8100});
 const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 const app = require("express");
-const lookup = require('safe-browse-url-lookup')({ apiKey: 'AIzaSyApajNfcS7Nr5ukcJapAwok8SXKNLgifec' });
 let database;
 
 // start a connection with the database
@@ -44,7 +43,9 @@ wss.on("connection", ws => {
             addressAutoFill: data.autoFill1,
             bankingAutoFill: data.autoFill2,
             cookieSecurity: false,
-            timelyCookies: false
+            timelyCookies: false,
+            safeBrowsing: false,
+            ipQuality: {}
         }
 
         // Compute the information from the plugin
@@ -254,38 +255,71 @@ wss.on("connection", ws => {
                 // check if google trusts it
                 // https://console.cloud.google.com/home/dashboard?project=web-security-plugin
                 // AIzaSyApajNfcS7Nr5ukcJapAwok8SXKNLgifec
+                checkSafeBrowsingAPI();
+                checkIPQualityAPI();
 
-                let safeBrowsingFetch = new XMLHttpRequest();
-                safeBrowsingFetch.onreadystatechange = function() {
-                    if (this.readyState === 4 && this.status === 200) {
-                        if (this.response === undefined) {
-                            console.log("secure");
-                            console.error(this.response);
-                        } else {
-                            console.log("insecure");
-                            console.error(this.response);
+                function checkSafeBrowsingAPI() {
+                    let safeBrowsingFetch = new XMLHttpRequest();
+                    safeBrowsingFetch.onreadystatechange = function() {
+                        if (this.readyState === 4 && this.status === 200) {
+                            if (this.responseText === "{}\n") {
+                                securityTest.score++;
+                                console.log("secure");
+                                securityTest.safeBrowsing = true;
+                            }
+                        }
+                    };
+
+                    let body = {
+                        "client": {
+                            "clientId":      "tomhoad",
+                            "clientVersion": "1.0.0"
+                        },
+                        "threatInfo": {
+                            "threatTypes":      ["THREAT_TYPE_UNSPECIFIED", "MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE", "POTENTIALLY_HARMFUL_APPLICATION"],
+                            "platformTypes":    ["WINDOWS"],
+                            "threatEntryTypes": ["URL"],
+                            "threatEntries": [
+                                {"url": data.href}
+                            ]
                         }
                     }
-                };
 
-                let body = {
-                    "client": {
-                        "clientId":      "tomhoad",
-                        "clientVersion": "1.0.0"
-                    },
-                    "threatInfo": {
-                        "threatTypes":      ["THREAT_TYPE_UNSPECIFIED", "MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE", "POTENTIALLY_HARMFUL_APPLICATION"],
-                        "platformTypes":    ["WINDOWS"],
-                        "threatEntryTypes": ["URL"],
-                        "threatEntries": [
-                            {"url": data.href}
-                        ]
-                    }
+                    safeBrowsingFetch.open("POST", "https://safebrowsing.googleapis.com/v4/threatMatches:find?key=AIzaSyApajNfcS7Nr5ukcJapAwok8SXKNLgifec", true);
+                    safeBrowsingFetch.setRequestHeader("Content-type", "application/json");
+                    safeBrowsingFetch.send(JSON.stringify(body));
                 }
 
-                safeBrowsingFetch.open("POST", "https://safebrowsing.googleapis.com/v4/threatMatches:find?key=AIzaSyApajNfcS7Nr5ukcJapAwok8SXKNLgifec", true);
-                safeBrowsingFetch.setRequestHeader("Content-type", "application/json");
-                safeBrowsingFetch.send(JSON.stringify(body));
+                // https://www.ipqualityscore.com/threat-feeds/malicious-url-scanner
+                // YZ3FapTPxtx4zOjHxd263djSQkwUQIBn
+                function checkIPQualityAPI() {
+                    let qualityFetch = new XMLHttpRequest();
+                    qualityFetch.onreadystatechange = function() {
+                        if (this.readyState === 4 && this.status === 200) {
+                            let jsonResult = JSON.parse(this.responseText);
+
+                            let result = {
+                                unsafe: jsonResult.unsafe,
+                                dnsValid: jsonResult.dns_valid,
+                                parking: jsonResult.parking,
+                                spamming: jsonResult.spamming,
+                                malware: jsonResult.malware,
+                                phishing: jsonResult.phishing,
+                                suspicious: jsonResult.suspicious,
+                                adult: jsonResult.adult,
+                                riskScore: jsonResult.risk_score,
+                            }
+
+                            console.log(result);
+                            securityTest.ipQuality = result;
+                        }
+                    };
+
+                    let link = "https://ipqualityscore.com/api/json/url/YZ3FapTPxtx4zOjHxd263djSQkwUQIBn/" + encodeURIComponent(data.href);
+                    qualityFetch.open("GET", link, true);
+                    qualityFetch.setRequestHeader("Content-type", "application/json");
+                    qualityFetch.send();
+                }
             } catch(err) {
                 console.error(err);
             }
@@ -320,6 +354,7 @@ wss.on("connection", ws => {
             "<li>Banking Auto Fill: " + securityTest.bankingAutoFill + "</li>" +
             "<li>Cookies Security: " + securityTest.cookieSecurity + "</li>" +
             "<li>Timely Cookies: " + securityTest.timelyCookies + "</li>" +
+            "<li>Safe Browsing API: " + securityTest.safeBrowsing + "</li>" +
             "</ul>"
 
         const quote = "\'";
