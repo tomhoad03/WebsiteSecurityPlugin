@@ -301,7 +301,6 @@ wss.on("connection", ws => {
                             let result = {
                                 unsafe: jsonResult.unsafe,
                                 dnsValid: jsonResult.dns_valid,
-                                parking: jsonResult.parking,
                                 spamming: jsonResult.spamming,
                                 malware: jsonResult.malware,
                                 phishing: jsonResult.phishing,
@@ -310,7 +309,31 @@ wss.on("connection", ws => {
                                 riskScore: jsonResult.risk_score,
                             }
 
-                            console.log(result);
+                            if (!result.unsafe) { // is the website unsafe? general rating
+                                securityTest.score++;
+                            } else if (result.dnsValid) { // does the website have valid dns records?
+                                securityTest.score++;
+                            } else if (!result.spamming) { // is the website associated with potential spam
+                                securityTest.score++;
+                            }else if (!result.malware) { // is the website associated with malware attacks
+                                securityTest.score++;
+                            } else if (!result.phishing) { // is the website associated with phishing attacks
+                                securityTest.score++;
+                            } else if (!result.suspicious) { // is the website associated with malicious attacks
+                                securityTest.score++;
+                            } else if (result.adult) { // is the website displaying adult content
+                                securityTest.score++;
+                            } else if (result.riskScore < 100 || (!result.malware && !result.phishing)) { // malware or phishing activity detected recently
+                                securityTest.score++;
+
+                                if (result.riskScore < 85) { // high risk limit
+                                    securityTest.score++;
+
+                                    if (result.riskScore < 75) { // suspicious limit
+                                        securityTest.score++;
+                                    }
+                                }
+                            }
                             securityTest.ipQuality = result;
                         }
                     };
