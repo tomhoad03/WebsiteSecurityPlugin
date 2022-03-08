@@ -264,7 +264,6 @@ wss.on("connection", ws => {
                         if (this.readyState === 4 && this.status === 200) {
                             if (this.responseText === "{}\n") {
                                 securityTest.score++;
-                                console.log("secure");
                                 securityTest.safeBrowsing = true;
                             }
                         }
@@ -458,32 +457,34 @@ wss.on("connection", ws => {
 
                                                 database.run("INSERT INTO linkEntries (domainEntryId, linkId) VALUES (" + quote + domainEntry + quote +
                                                                                                                       ", " + quote + linkId1 + quote + ")");
-
-                                                const results = "<ul>" +
-                                                    "<li>Domain: " + securityTest.domain + "</li>" +
-                                                    "<li>Score: " + securityTest.score + "</li>" +
-                                                    "<li>HTTPS Protocols: " + securityTest.httpsProtocolsTest + "</li>" +
-                                                    "<li>Client Side Comments: " + securityTest.clientSideCommentsTest + "</li>" +
-                                                    "<li>Untrusted Links: " + securityTest.untrustedLinksTest + "</li>" +
-                                                    "<li>Basic XSS Test: " + securityTest.basicXXSTest + "</li>" +
-                                                    "<li>Address Auto Fill: " + securityTest.addressAutoFill + "</li>" +
-                                                    "<li>Banking Auto Fill: " + securityTest.bankingAutoFill + "</li>" +
-                                                    "<li>Cookies Security: " + securityTest.cookieSecurity + "</li>" +
-                                                    "<li>Timely Cookies: " + securityTest.timelyCookies + "</li>" +
-                                                    "<li>Safe Browsing API: " + securityTest.safeBrowsing + "</li>" +
-                                                    "</ul>"
-
-                                                // update the plugin with the current security rating
-                                                ws.send(JSON.stringify({
-                                                    id: "results",
-                                                    href: "" + data.href + "",
-                                                    score: securityTest.score,
-                                                    results: results
-                                                }));
                                             });
                                         });
                                     }
                                 }
+
+                                const results = "<ul>" +
+                                    "<li>Domain: " + securityTest.domain + "</li>" +
+                                    "<li>Score: " + securityTest.score + "</li>" +
+                                    "<li>HTTPS Protocols: " + securityTest.httpsProtocolsTest + "</li>" +
+                                    "<li>Client Side Comments: " + securityTest.clientSideCommentsTest + "</li>" +
+                                    "<li>Untrusted Links: " + securityTest.untrustedLinksTest + "</li>" +
+                                    "<li>Basic XSS Test: " + securityTest.basicXXSTest + "</li>" +
+                                    "<li>Address Auto Fill: " + securityTest.addressAutoFill + "</li>" +
+                                    "<li>Banking Auto Fill: " + securityTest.bankingAutoFill + "</li>" +
+                                    "<li>Cookies Security: " + securityTest.cookieSecurity + "</li>" +
+                                    "<li>Timely Cookies: " + securityTest.timelyCookies + "</li>" +
+                                    "<li>Safe Browsing API: " + securityTest.safeBrowsing + "</li>" +
+                                    "</ul>"
+
+                                console.log("message sent");
+
+                                // update the plugin with the current security rating
+                                ws.send(JSON.stringify({
+                                    id: "results",
+                                    href: "" + data.href + "",
+                                    score: securityTest.score,
+                                    results: results
+                                }));
                             });
                         });
                     });

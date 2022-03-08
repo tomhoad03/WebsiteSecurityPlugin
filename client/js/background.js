@@ -69,7 +69,7 @@ function socket(addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingRepo
     chrome.storage.sync.set({currentHref});
 
     // Listen for messages from the server.
-    ws.addEventListener("open", () => {
+    ws.onopen = function() {
         ws.send(JSON.stringify({
             id: "window",
             href: window.location.href,
@@ -85,19 +85,26 @@ function socket(addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingRepo
             cookies: cookieData.filter(cookie => cookie.domain.includes(window.location.hostname)),
             html: document.getElementsByTagName('html')[0].innerHTML,
         }));
-    });
+    };
 
-    ws.addEventListener("message", message => {
+    ws.onmessage = function(message) {
         const data = JSON.parse(message.data);
+
+        console.log("test1");
 
         // update the security score
         if (data.id === "results") {
             let results = data.results;
             let resultsHref = data.href;
+
+            console.log("test2");
+
             chrome.storage.sync.set({results});
             chrome.storage.sync.set({resultsHref});
+
+            ws.close();
         }
-    });
+    };
 }
 
 // google pages playing up, move away from recursive link and script checks
