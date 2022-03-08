@@ -2,6 +2,7 @@ const {Server} = require("ws");
 const wss = new Server({port: 8100});
 const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 const app = require("express");
+const lookup = require('safe-browse-url-lookup')({ apiKey: 'AIzaSyApajNfcS7Nr5ukcJapAwok8SXKNLgifec' });
 let database;
 
 // start a connection with the database
@@ -147,8 +148,7 @@ wss.on("connection", ws => {
                         let link = html.substring(html.indexOf("href=\"") + 6, html.indexOf("\"", html.indexOf("href=\"") + 6));
                         let linkTest = {
                             href: link,
-                            trusted: false,
-                            googleTrust: false,
+                            trusted: false
                         }
 
                         if (!link.includes("http") || link.includes("https")) {
@@ -156,23 +156,6 @@ wss.on("connection", ws => {
                         } else {
                             securityTest.untrustedLinksTest = false;
                         }
-
-                        // check if google trusts it
-                        // https://console.cloud.google.com/home/dashboard?project=web-security-plugin
-                        // AIzaSyApajNfcS7Nr5ukcJapAwok8SXKNLgifec
-                        // https://github.com/muety/safe-browse-url-lookup
-                        /*
-                        const lookup = require('safe-browse-url-lookup')({ apiKey: 'AIzaSyApajNfcS7Nr5ukcJapAwok8SXKNLgifec' });
-
-                        lookup.checkSingle(link)
-                            .then(isMalicious => {
-                                linkTest.googleTrust = isMalicious;
-                            })
-                            .catch(err => {
-                                console.log('Something went wrong.');
-                                console.log(err);
-                            });*/
-                        // not feasible, too many links to check and keeps disconnecting
 
                         if (securityTest.linkTests !== undefined) {
                             securityTest.linkTests = securityTest.linkTests.concat(linkTest);
@@ -267,6 +250,19 @@ wss.on("connection", ws => {
                     securityTest.score++;
                     return true;
                 }
+
+                // check if google trusts it
+                // https://console.cloud.google.com/home/dashboard?project=web-security-plugin
+                // AIzaSyApajNfcS7Nr5ukcJapAwok8SXKNLgifec
+                // https://github.com/muety/safe-browse-url-lookup
+
+                lookup.checkSingle(data.href)
+                    .then(secure => {
+                        console.log("Secure");
+                    })
+                    .catch(error => {
+                        console.log("Insecure");
+                    });
             } catch(err) {
                 console.error(err);
             }
