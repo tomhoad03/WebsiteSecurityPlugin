@@ -365,6 +365,38 @@ wss.on("connection", ws => {
              */
         }
 
+        const results = "<ul>" +
+            "<li>Domain: " + securityTest.domain + "</li>" +
+            "<li>Score: " + securityTest.score + "</li>" +
+            "<li>HTTPS Protocols: " + securityTest.httpsProtocolsTest + "</li>" +
+            "<li>Client Side Comments: " + securityTest.clientSideCommentsTest + "</li>" +
+            "<li>Untrusted Links: " + securityTest.untrustedLinksTest + "</li>" +
+            "<li>Basic XSS Test: " + securityTest.basicXXSTest + "</li>" +
+            "<li>Address Auto Fill: " + securityTest.addressAutoFill + "</li>" +
+            "<li>Banking Auto Fill: " + securityTest.bankingAutoFill + "</li>" +
+            "<li>Cookies Security: " + securityTest.cookieSecurity + "</li>" +
+            "<li>Timely Cookies: " + securityTest.timelyCookies + "</li>" +
+            "<li>Safe Browsing API: " + securityTest.safeBrowsing + "</li>" +
+            "</ul>"
+
+        let dashoffest = 472 - ((securityTest.score / 23) * 472)
+
+        const donut = "<linearGradient id=\"score-gradient\" x1=\"0\" y1=\"0\" x2=\"0.6\" y2=\"1\">" +
+            "<stop offset=\"0\" stop-color=\"#00FF00\"/>" +
+            "<stop offset=\"0.5\" stop-color=\"#FFFF00\"/>" +
+            "<stop offset=\"1\" stop-color=\"#FF0000\"/>" +
+            "</linearGradient>" +
+            "<circle cx=\"75\" cy=\"75\" r=\"68\" stroke-dashoffset=\"" + dashoffest + "\"></circle>\""
+
+        // update the plugin with the current security rating
+        ws.send(JSON.stringify({
+            id: "results",
+            href: "" + data.href + "",
+            score: securityTest.score,
+            results: results,
+            donut: donut
+        }));
+
         const quote = "\'";
 
         // check if the domain name has already been registered
@@ -461,30 +493,6 @@ wss.on("connection", ws => {
                                         });
                                     }
                                 }
-
-                                const results = "<ul>" +
-                                    "<li>Domain: " + securityTest.domain + "</li>" +
-                                    "<li>Score: " + securityTest.score + "</li>" +
-                                    "<li>HTTPS Protocols: " + securityTest.httpsProtocolsTest + "</li>" +
-                                    "<li>Client Side Comments: " + securityTest.clientSideCommentsTest + "</li>" +
-                                    "<li>Untrusted Links: " + securityTest.untrustedLinksTest + "</li>" +
-                                    "<li>Basic XSS Test: " + securityTest.basicXXSTest + "</li>" +
-                                    "<li>Address Auto Fill: " + securityTest.addressAutoFill + "</li>" +
-                                    "<li>Banking Auto Fill: " + securityTest.bankingAutoFill + "</li>" +
-                                    "<li>Cookies Security: " + securityTest.cookieSecurity + "</li>" +
-                                    "<li>Timely Cookies: " + securityTest.timelyCookies + "</li>" +
-                                    "<li>Safe Browsing API: " + securityTest.safeBrowsing + "</li>" +
-                                    "</ul>"
-
-                                console.log("message sent");
-
-                                // update the plugin with the current security rating
-                                ws.send(JSON.stringify({
-                                    id: "results",
-                                    href: "" + data.href + "",
-                                    score: securityTest.score,
-                                    results: results
-                                }));
                             });
                         });
                     });

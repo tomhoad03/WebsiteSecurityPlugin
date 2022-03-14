@@ -11,7 +11,23 @@
     <h1>Web Browser Security Plugin</h1>
 
     <!-- this button does not work -->
-    <button onclick="displayResults()">Update</button>
+    <!-- <button onclick="displayResults()">Update</button> -->
+
+    <div class="area">
+      <div class="outer">
+        <div class="inner"></div>
+      </div>
+
+      <svg height="150" width="150" id="donut">
+        <linearGradient id="score-gradient" x1="0" y1="0" x2="0.6" y2="1">
+          <stop offset="0" stop-color="#00FF00"/>
+          <stop offset="0.5" stop-color="#FFFF00"/>
+          <stop offset="1" stop-color="#FF0000"/>
+        </linearGradient>
+
+        <circle cx="75" cy="75" r="68" stroke-dashoffset="165"></circle>
+      </svg>
+    </div>
 
     <p id="results">Null</p>
 

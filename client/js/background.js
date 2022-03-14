@@ -90,17 +90,13 @@ function socket(addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingRepo
     ws.onmessage = function(message) {
         const data = JSON.parse(message.data);
 
-        console.log("test1");
-
         // update the security score
         if (data.id === "results") {
             let results = data.results;
-            let resultsHref = data.href;
-
-            console.log("test2");
+            let donut = data.donut;
 
             chrome.storage.sync.set({results});
-            chrome.storage.sync.set({resultsHref});
+            chrome.storage.sync.set({donut});
 
             ws.close();
         }
