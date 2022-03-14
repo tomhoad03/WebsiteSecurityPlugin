@@ -365,9 +365,11 @@ wss.on("connection", ws => {
              */
         }
 
+        const maxScore = 23;
+
         const results = "<ul>" +
             "<li>Domain: " + securityTest.domain + "</li>" +
-            "<li>Score: " + securityTest.score + "</li>" +
+            "<li>Score: " + ((securityTest.score / maxScore) * 100).toFixed(2) + "%</li>" +
             "<li>HTTPS Protocols: " + securityTest.httpsProtocolsTest + "</li>" +
             "<li>Client Side Comments: " + securityTest.clientSideCommentsTest + "</li>" +
             "<li>Untrusted Links: " + securityTest.untrustedLinksTest + "</li>" +
@@ -379,14 +381,14 @@ wss.on("connection", ws => {
             "<li>Safe Browsing API: " + securityTest.safeBrowsing + "</li>" +
             "</ul>"
 
-        let dashoffest = 472 - ((securityTest.score / 23) * 472)
+        const dashOffset = 472 - ((securityTest.score / maxScore) * 472)
 
         const donut = "<linearGradient id=\"score-gradient\" x1=\"0\" y1=\"0\" x2=\"0.6\" y2=\"1\">" +
             "<stop offset=\"0\" stop-color=\"#00FF00\"/>" +
             "<stop offset=\"0.5\" stop-color=\"#FFFF00\"/>" +
             "<stop offset=\"1\" stop-color=\"#FF0000\"/>" +
             "</linearGradient>" +
-            "<circle cx=\"75\" cy=\"75\" r=\"68\" stroke-dashoffset=\"" + dashoffest + "\"></circle>\""
+            "<circle cx=\"75\" cy=\"75\" r=\"68\" stroke-dashoffset=\"" + dashOffset + "\"></circle>\""
 
         // update the plugin with the current security rating
         ws.send(JSON.stringify({
