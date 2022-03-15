@@ -1,24 +1,17 @@
-.btn {
-  outline: none;
-  margin: 10px;
-  border: none;
-  border-radius: 2px;
-}
-
-.btn.current {
-  box-shadow: 0 0 0 2px white,
-              0 0 0 4px black;
-}
-
 body {
   height: 500px;
   width: 500px;
+}
+
+h1, p {
+  text-align: center;
 }
 
 .area {
   width: 150px;
   height: 150px;
   position: relative;
+  margin: auto;
 }
 .outer {
   width: 120px;

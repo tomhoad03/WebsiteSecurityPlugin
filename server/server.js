@@ -32,8 +32,11 @@ wss.on("connection", ws => {
 
         let securityTest = {
             domain: data.domain,
+            href: data.href,
             path: data.path,
             score: 0,
+            maxScore: 23,
+            time: new Date().getTime(),
             scriptTests: [],
             linkTests: [],
             httpsProtocolsTest: false,
@@ -365,38 +368,10 @@ wss.on("connection", ws => {
              */
         }
 
-        const maxScore = 23;
-
-        const results = "<ul>" +
-            "<li>Domain: " + securityTest.domain + "</li>" +
-            "<li>Score: " + ((securityTest.score / maxScore) * 100).toFixed(2) + "%</li>" +
-            "<li>HTTPS Protocols: " + securityTest.httpsProtocolsTest + "</li>" +
-            "<li>Client Side Comments: " + securityTest.clientSideCommentsTest + "</li>" +
-            "<li>Untrusted Links: " + securityTest.untrustedLinksTest + "</li>" +
-            "<li>Basic XSS Test: " + securityTest.basicXXSTest + "</li>" +
-            "<li>Address Auto Fill: " + securityTest.addressAutoFill + "</li>" +
-            "<li>Banking Auto Fill: " + securityTest.bankingAutoFill + "</li>" +
-            "<li>Cookies Security: " + securityTest.cookieSecurity + "</li>" +
-            "<li>Timely Cookies: " + securityTest.timelyCookies + "</li>" +
-            "<li>Safe Browsing API: " + securityTest.safeBrowsing + "</li>" +
-            "</ul>"
-
-        const dashOffset = 472 - ((securityTest.score / maxScore) * 472)
-
-        const donut = "<linearGradient id=\"score-gradient\" x1=\"0\" y1=\"0\" x2=\"0.6\" y2=\"1\">" +
-            "<stop offset=\"0\" stop-color=\"#00FF00\"/>" +
-            "<stop offset=\"0.5\" stop-color=\"#FFFF00\"/>" +
-            "<stop offset=\"1\" stop-color=\"#FF0000\"/>" +
-            "</linearGradient>" +
-            "<circle cx=\"75\" cy=\"75\" r=\"68\" stroke-dashoffset=\"" + dashOffset + "\"></circle>\""
-
         // update the plugin with the current security rating
         ws.send(JSON.stringify({
             id: "results",
-            href: "" + data.href + "",
-            score: securityTest.score,
-            results: results,
-            donut: donut
+            securityTest: securityTest
         }));
 
         const quote = "\'";

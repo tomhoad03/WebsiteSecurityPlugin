@@ -92,11 +92,19 @@ function socket(addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingRepo
 
         // update the security score
         if (data.id === "results") {
-            let results = data.results;
-            let donut = data.donut;
+            let securityTest = data.securityTest;
 
-            chrome.storage.sync.set({results});
-            chrome.storage.sync.set({donut});
+            console.log("1: " + securityTest.domain);
+
+            chrome.runtime.sendMessage({
+                msg: "results_sent",
+                data: {
+                    subject: "results",
+                    content: securityTest
+                }
+            });
+
+            console.log("2: " + securityTest.domain);
 
             ws.close();
         }
