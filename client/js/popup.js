@@ -1,13 +1,25 @@
 let resultsText = document.getElementById("results");
 let donutScore= document.getElementById("donut");
 
+chrome.runtime.sendMessage({
+    msg: "results_request",
+    data: {
+        subject: "results",
+        content: null
+    }
+});
+
+console.log("results_request");
+
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
+        console.log("results_sent");
+
         if (request.msg === "results_sent") {
             let securityTest = request.data.content;
 
-            console.log(securityTest.domain);
             console.log(securityTest);
+            console.log(securityTest.domain);
 
             // displays the results
             const results = "<ul>" +

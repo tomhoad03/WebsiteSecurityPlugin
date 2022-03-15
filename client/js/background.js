@@ -65,9 +65,6 @@ chrome.tabs.onActivated.addListener(async () => {
 function socket(addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingReporting, doNotTrack, hyperlinkAuditing, cookieData) {
     let ws = new WebSocket("ws://localhost:8100");
 
-    let currentHref = window.location.href;
-    chrome.storage.sync.set({currentHref});
-
     // Listen for messages from the server.
     ws.onopen = function() {
         ws.send(JSON.stringify({
@@ -93,8 +90,23 @@ function socket(addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingRepo
         // update the security score
         if (data.id === "results") {
             let securityTest = data.securityTest;
+            chrome.storage.sync.set({securityTest});
+            console.log("results_await");
+            ws.close();
+        }
+    };
+}
 
-            console.log("1: " + securityTest.domain);
+chrome.runtime.onMessage.addListener(
+    function(request, sender, sendResponse) {
+        console.log("message_received");
+
+        if (request.msg === "results_request") {
+            console.log("results_request");
+
+            chrome.storage.sync.get("securityTest", ({securityTest}) => {
+                console.log(securityTest);
+            });
 
             chrome.runtime.sendMessage({
                 msg: "results_sent",
@@ -103,12 +115,6 @@ function socket(addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingRepo
                     content: securityTest
                 }
             });
-
-            console.log("2: " + securityTest.domain);
-
-            ws.close();
         }
-    };
-}
-
-// google pages playing up, move away from recursive link and script checks
+    }
+);
