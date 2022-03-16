@@ -278,12 +278,10 @@ wss.on("connection", ws => {
                             "clientVersion": "1.0.0"
                         },
                         "threatInfo": {
-                            "threatTypes":      ["THREAT_TYPE_UNSPECIFIED", "MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE", "POTENTIALLY_HARMFUL_APPLICATION"],
-                            "platformTypes":    ["WINDOWS"],
+                            "threatTypes": ["THREAT_TYPE_UNSPECIFIED", "MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE", "POTENTIALLY_HARMFUL_APPLICATION"],
+                            "platformTypes": ["WINDOWS"],
                             "threatEntryTypes": ["URL"],
-                            "threatEntries": [
-                                {"url": data.href}
-                            ]
+                            "threatEntries": [{"url": data.href}]
                         }
                     }
 

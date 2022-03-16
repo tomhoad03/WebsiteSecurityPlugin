@@ -1,5 +1,5 @@
 let resultsText = document.getElementById("results");
-let donutScore= document.getElementById("donut");
+let donutScore = document.getElementById("donut");
 
 chrome.runtime.sendMessage({
     msg: "results_request",
