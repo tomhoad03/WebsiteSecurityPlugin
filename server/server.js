@@ -36,19 +36,29 @@ wss.on("connection", ws => {
             path: data.path,
             score: 0,
             maxScore: 23,
-            time: new Date().getTime(),
             scriptTests: [],
             linkTests: [],
-            httpsProtocolsTest: false,
-            clientSideCommentsTest: false,
-            untrustedLinksTest: true,
-            basicXXSTest: false,
-            addressAutoFill: data.autoFill1,
-            bankingAutoFill: data.autoFill2,
-            cookieSecurity: false,
-            timelyCookies: false,
-            safeBrowsing: false,
-            ipQuality: {}
+            httpsProtocolsTest: false, // http or https?
+            clientSideCommentsTest: false, // comments?
+            untrustedLinksTest: true, // links?
+            basicXXSTest: false, // xxs test (not currently functioning)
+            addressAutoFillTest: data.autoFill1, // address autofill
+            bankingAutoFillTest: data.autoFill2, // banking autofill
+            safeBrowsing1Test: data.safeBrowsing1, // safe browsing enabled
+            safeBrowsing2Test: data.safeBrowsing2, // safe browsing blocking enabled
+            trackingTest: data.doNotTrack, // tracking prevention
+            auditingTest: data.auditing, // link auditing
+            cookieSecurityTest: false, // secure cookies?
+            timelyCookiesTest: false, // timely cookies
+            googleSafeBrowsingTest: false, // safe browsing api result
+            ipQualityUnsafeTest: false, // ip quality api results
+            ipQualityDnsValidTest: false,
+            ipQualitySpammingTest: false,
+            ipQualityMalwareTest: false,
+            ipQualityPhishingTest: false,
+            ipQualitySuspiciousTest: false,
+            ipQualityAdultTest: false,
+            ipQualityRiskScoreTest: 0
         }
 
         // Compute the information from the plugin
@@ -232,8 +242,8 @@ wss.on("connection", ws => {
                 }
 
                 // Checks the security of the cookies
-                securityTest.cookieSecurity = checkCookieSecurity(data.cookies);
-                securityTest.timelyCookies = checkCookieTimeliness(data.cookies);
+                securityTest.cookieSecurityTest = checkCookieSecurity(data.cookies);
+                securityTest.timelyCookiesTest = checkCookieTimeliness(data.cookies);
 
                 function checkCookieSecurity(cookies) {
                     cookies.forEach(cookie => {
@@ -266,8 +276,8 @@ wss.on("connection", ws => {
                     safeBrowsingFetch.onreadystatechange = function() {
                         if (this.readyState === 4 && this.status === 200) {
                             if (this.responseText === "{}\n") {
+                                securityTest.googleSafeBrowsingTest = true;
                                 securityTest.score++;
-                                securityTest.safeBrowsing = true;
                             }
                         }
                     };
@@ -296,45 +306,42 @@ wss.on("connection", ws => {
                     let qualityFetch = new XMLHttpRequest();
                     qualityFetch.onreadystatechange = function() {
                         if (this.readyState === 4 && this.status === 200) {
-                            let jsonResult = JSON.parse(this.responseText);
+                            let result = JSON.parse(this.responseText);
 
-                            let result = {
-                                unsafe: jsonResult.unsafe,
-                                dnsValid: jsonResult.dns_valid,
-                                spamming: jsonResult.spamming,
-                                malware: jsonResult.malware,
-                                phishing: jsonResult.phishing,
-                                suspicious: jsonResult.suspicious,
-                                adult: jsonResult.adult,
-                                riskScore: jsonResult.risk_score,
-                            }
+                            securityTest.ipQualityUnsafeTest = result.unsafe;
+                            securityTest.ipQualityDnsValidTest = result.dns_valid;
+                            securityTest.ipQualitySpammingTest = result.spamming;
+                            securityTest.ipQualityMalwareTest = result.malware;
+                            securityTest.ipQualityPhishingTest = result.phishing;
+                            securityTest.ipQualitySuspiciousTest = result.suspicious;
+                            securityTest.ipQualityAdultTest = result.adult;
+                            securityTest.ipQualityRiskScoreTest = result.risk_score;
 
-                            if (!result.unsafe) { // is the website unsafe? general rating
+                            if (!securityTest.ipQualityUnsafeTest) { // is the website unsafe? general rating
                                 securityTest.score++;
-                            } else if (result.dnsValid) { // does the website have valid dns records?
+                            } else if (securityTest.ipQualityDnsValidTest) { // does the website have valid dns records?
                                 securityTest.score++;
-                            } else if (!result.spamming) { // is the website associated with potential spam
+                            } else if (!securityTest.ipQualitySpammingTest) { // is the website associated with potential spam
                                 securityTest.score++;
-                            }else if (!result.malware) { // is the website associated with malware attacks
+                            }else if (!securityTest.ipQualityMalwareTest) { // is the website associated with malware attacks
                                 securityTest.score++;
-                            } else if (!result.phishing) { // is the website associated with phishing attacks
+                            } else if (!securityTest.ipQualityPhishingTest) { // is the website associated with phishing attacks
                                 securityTest.score++;
-                            } else if (!result.suspicious) { // is the website associated with malicious attacks
+                            } else if (!securityTest.ipQualitySuspiciousTest) { // is the website associated with malicious attacks
                                 securityTest.score++;
-                            } else if (result.adult) { // is the website displaying adult content
+                            } else if (securityTest.ipQualityAdultTest) { // is the website displaying adult content
                                 securityTest.score++;
-                            } else if (result.riskScore < 100 || (!result.malware && !result.phishing)) { // malware or phishing activity detected recently
+                            } else if (securityTest.ipQualityRiskScoreTest < 100 || (!securityTest.ipQualityRiskScoreTest && !securityTest.ipQualityRiskScoreTest)) { // malware or phishing activity detected recently
                                 securityTest.score++;
 
-                                if (result.riskScore < 85) { // high risk limit
+                                if (result.risk_score < 85) { // high risk limit
                                     securityTest.score++;
 
-                                    if (result.riskScore < 75) { // suspicious limit
+                                    if (result.risk_score < 75) { // suspicious limit
                                         securityTest.score++;
                                     }
                                 }
                             }
-                            securityTest.ipQuality = result;
                         }
                     };
 
@@ -376,7 +383,7 @@ wss.on("connection", ws => {
 
         // check if the domain name has already been registered
         database.serialize(() => {
-            database.each("SELECT COUNT(*) From Domains WHERE (domainName = " + quote + data.domain + quote + ")", (err, row) => {
+            database.each("SELECT COUNT(*) From Domains WHERE (domainName = " + quote + securityTest.domain + quote + ")", (err, row) => {
                 if (err) {
                     console.error(err.message);
                 }
@@ -384,7 +391,7 @@ wss.on("connection", ws => {
 
                 // register a new domain name
                 if (domainCount === 0) {
-                    database.each("INSERT INTO Domains (domainName) VALUES (" + quote + data.domain + quote + ")", (err, row) => {
+                    database.each("INSERT INTO Domains (domainName) VALUES (" + quote + securityTest.domain + quote + ")", (err, row) => {
                         if (err) {
                             console.error(err.message);
                         }
@@ -397,7 +404,7 @@ wss.on("connection", ws => {
                 // get domainId
                 function logNewAccess() {
                     database.serialize(() => {
-                        database.each("SELECT domainId FROM Domains WHERE domainName = " + quote + data.domain + quote, (err, row) => {
+                        database.each("SELECT domainId FROM Domains WHERE domainName = " + quote + securityTest.domain + quote, (err, row) => {
                             if (err) {
                                 console.error(err.message);
                             }
@@ -407,11 +414,31 @@ wss.on("connection", ws => {
                             database.serialize(() => {
                                 let domainEntry = Date.now();
 
-                                database.run("INSERT INTO DomainEntries (domainEntryId, domainId, path, href, score) VALUES (" + quote + domainEntry + quote +
-                                                                                                                             ", " + quote + domainId1 + quote +
-                                                                                                                             ", " + quote + data.path + quote +
-                                                                                                                             ", " + quote + data.href + quote +
-                                                                                                                             ", " + quote + securityTest.score + quote + ")");
+                                database.run("INSERT INTO DomainEntries (domainEntryId, domainId, path, href, score," +
+                                                                         "httpsProtocolsTest, clientSideCommentsTest, untrustedLinksTest, basicXSSTest, addressAutoFillTest, bankingAutoFillTest, cookieSecurityTest, timelyCookiesTest, safeBrowsingTest," +
+                                                                         "ipQualityUnsafeTest, ipQualityDNSTest, ipQualitySpammingTest, ipQualityMalwareTest, ipQualityPhishingTest, ipQualitySuspiciousTest, ipQualityAdultTest, ipQualityRiskScore)" +
+                                                                         "VALUES (" + quote + domainEntry + quote +
+                                                                                  ", " + quote + domainId1 + quote +
+                                                                                  ", " + quote + securityTest.path + quote +
+                                                                                  ", " + quote + securityTest.href + quote +
+                                                                                  ", " + quote + securityTest.score + quote +
+                                                                                  ", " + quote + securityTest.httpsProtocolsTest + quote +
+                                                                                  ", " + quote + securityTest.clientSideCommentsTest + quote +
+                                                                                  ", " + quote + securityTest.untrustedLinksTest + quote +
+                                                                                  ", " + quote + securityTest.basicXXSTest + quote +
+                                                                                  ", " + quote + securityTest.addressAutoFillTest + quote +
+                                                                                  ", " + quote + securityTest.bankingAutoFillTest + quote +
+                                                                                  ", " + quote + securityTest.cookieSecurityTest + quote +
+                                                                                  ", " + quote + securityTest.timelyCookiesTest + quote +
+                                                                                  ", " + quote + securityTest.googleSafeBrowsingTest + quote +
+                                                                                  ", " + quote + securityTest.ipQualityUnsafeTest + quote +
+                                                                                  ", " + quote + securityTest.ipQualityDnsValidTest + quote +
+                                                                                  ", " + quote + securityTest.ipQualitySpammingTest + quote +
+                                                                                  ", " + quote + securityTest.ipQualityMalwareTest + quote +
+                                                                                  ", " + quote + securityTest.ipQualityPhishingTest + quote +
+                                                                                  ", " + quote + securityTest.ipQualitySuspiciousTest + quote +
+                                                                                  ", " + quote + securityTest.ipQualityAdultTest + quote +
+                                                                                  ", " + quote + securityTest.ipQualityRiskScoreTest + quote + ")");
 
                                 // log new script
                                 for (let scriptTest in securityTest.scriptTests) {
@@ -425,7 +452,16 @@ wss.on("connection", ws => {
                                             let scriptCount = Object.values(JSON.parse(JSON.stringify(row)))[0];
 
                                             if (scriptCount === 0) {
-                                                database.run("INSERT INTO Scripts (href) VALUES (" + quote + script.href + quote + ")");
+                                                database.run("INSERT INTO Scripts (href, external, nonce, integrity, crossOrigin, eval, execScript, timeout, interval, innerHTML) VALUES (" + quote + script.href  + quote +
+                                                                                                                                                                                          ", " + quote + script.external + quote +
+                                                                                                                                                                                          ", " + quote + script.nonce + quote +
+                                                                                                                                                                                          ", " + quote + script.integrity + quote +
+                                                                                                                                                                                          ", " + quote + script.crossOrigin + quote +
+                                                                                                                                                                                          ", " + quote + script.eval + quote +
+                                                                                                                                                                                          ", " + quote + script.execScript + quote +
+                                                                                                                                                                                          ", " + quote + script.timeout + quote +
+                                                                                                                                                                                          ", " + quote + script.interval + quote +
+                                                                                                                                                                                          ", " + quote + script.innerHTML + quote + ")");
                                             }
 
                                             database.each("SELECT scriptId FROM Scripts WHERE href = " + quote + script.href + quote, (err, row) => {
@@ -453,7 +489,8 @@ wss.on("connection", ws => {
                                             let linkCount = Object.values(JSON.parse(JSON.stringify(row)))[0];
 
                                             if (linkCount === 0) {
-                                                database.run("INSERT INTO Links (href) VALUES (" + quote + link.href + quote + ")");
+                                                database.run("INSERT INTO Links (href, trusted) VALUES (" + quote + link.href + quote +
+                                                                                                        ", " + quote + link.trusted + quote + ")");
                                             }
 
                                             database.each("SELECT linkId FROM Links WHERE href = " + quote + link.href + quote, (err, row) => {
