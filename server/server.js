@@ -416,7 +416,7 @@ wss.on("connection", ws => {
 
                                 database.run("INSERT INTO DomainEntries (domainEntryId, domainId, path, href, score," +
                                                                          "httpsProtocolsTest, clientSideCommentsTest, untrustedLinksTest, basicXSSTest, addressAutoFillTest, bankingAutoFillTest, safeBrowsing1Test, safeBrowsing2Test, trackingTest, auditingTest, cookieSecurityTest, timelyCookiesTest," +
-                                                                         "googleSafeBrowsingTest, ipQualityUnsafeTest, ipQualityDNSTest, ipQualitySpammingTest, ipQualityMalwareTest, ipQualityPhishingTest, ipQualitySuspiciousTest, ipQualityAdultTest, ipQualityRiskScore)" +
+                                                                         "googleSafeBrowsingTest, ipQualityUnsafeTest, ipQualityDnsValidTest, ipQualitySpammingTest, ipQualityMalwareTest, ipQualityPhishingTest, ipQualitySuspiciousTest, ipQualityAdultTest, ipQualityRiskScore)" +
                                                                          "VALUES (" + quote + domainEntry + quote +
                                                                                   ", " + quote + domainId1 + quote +
                                                                                   ", " + quote + securityTest.path + quote +
