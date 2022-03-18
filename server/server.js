@@ -331,13 +331,13 @@ wss.on("connection", ws => {
                                 securityTest.score++;
                             } else if (securityTest.ipQualityAdultTest) { // is the website displaying adult content
                                 securityTest.score++;
-                            } else if (securityTest.ipQualityRiskScoreTest < 100 || (!securityTest.ipQualityRiskScoreTest && !securityTest.ipQualityRiskScoreTest)) { // malware or phishing activity detected recently
+                            } else if (securityTest.ipQualityRiskScore < 100 || (!securityTest.ipQualityMalwareTest && !securityTest.ipQualityPhishingTest)) { // malware or phishing activity detected recently
                                 securityTest.score++;
 
-                                if (result.risk_score < 85) { // high risk limit
+                                if (securityTest.ipQualityRiskScore < 85) { // high risk limit
                                     securityTest.score++;
 
-                                    if (result.risk_score < 75) { // suspicious limit
+                                    if (securityTest.ipQualityRiskScore < 75) { // suspicious limit
                                         securityTest.score++;
                                     }
                                 }
@@ -415,8 +415,8 @@ wss.on("connection", ws => {
                                 let domainEntry = Date.now();
 
                                 database.run("INSERT INTO DomainEntries (domainEntryId, domainId, path, href, score," +
-                                                                         "httpsProtocolsTest, clientSideCommentsTest, untrustedLinksTest, basicXSSTest, addressAutoFillTest, bankingAutoFillTest, cookieSecurityTest, timelyCookiesTest, safeBrowsingTest," +
-                                                                         "ipQualityUnsafeTest, ipQualityDNSTest, ipQualitySpammingTest, ipQualityMalwareTest, ipQualityPhishingTest, ipQualitySuspiciousTest, ipQualityAdultTest, ipQualityRiskScore)" +
+                                                                         "httpsProtocolsTest, clientSideCommentsTest, untrustedLinksTest, basicXSSTest, addressAutoFillTest, bankingAutoFillTest, safeBrowsing1Test, safeBrowsing2Test, trackingTest, auditingTest, cookieSecurityTest, timelyCookiesTest," +
+                                                                         "googleSafeBrowsingTest, ipQualityUnsafeTest, ipQualityDNSTest, ipQualitySpammingTest, ipQualityMalwareTest, ipQualityPhishingTest, ipQualitySuspiciousTest, ipQualityAdultTest, ipQualityRiskScore)" +
                                                                          "VALUES (" + quote + domainEntry + quote +
                                                                                   ", " + quote + domainId1 + quote +
                                                                                   ", " + quote + securityTest.path + quote +
@@ -428,6 +428,10 @@ wss.on("connection", ws => {
                                                                                   ", " + quote + securityTest.basicXXSTest + quote +
                                                                                   ", " + quote + securityTest.addressAutoFillTest + quote +
                                                                                   ", " + quote + securityTest.bankingAutoFillTest + quote +
+                                                                                  ", " + quote + securityTest.safeBrowsing1Test + quote +
+                                                                                  ", " + quote + securityTest.safeBrowsing2Test + quote +
+                                                                                  ", " + quote + securityTest.trackingTest + quote +
+                                                                                  ", " + quote + securityTest.auditingTest + quote +
                                                                                   ", " + quote + securityTest.cookieSecurityTest + quote +
                                                                                   ", " + quote + securityTest.timelyCookiesTest + quote +
                                                                                   ", " + quote + securityTest.googleSafeBrowsingTest + quote +
@@ -438,7 +442,7 @@ wss.on("connection", ws => {
                                                                                   ", " + quote + securityTest.ipQualityPhishingTest + quote +
                                                                                   ", " + quote + securityTest.ipQualitySuspiciousTest + quote +
                                                                                   ", " + quote + securityTest.ipQualityAdultTest + quote +
-                                                                                  ", " + quote + securityTest.ipQualityRiskScoreTest + quote + ")");
+                                                                                  ", " + quote + securityTest.ipQualityRiskScore + quote + ")");
 
                                 // log new script
                                 for (let scriptTest in securityTest.scriptTests) {
