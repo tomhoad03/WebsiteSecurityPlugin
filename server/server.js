@@ -58,7 +58,7 @@ wss.on("connection", ws => {
             ipQualityPhishingTest: false,
             ipQualitySuspiciousTest: false,
             ipQualityAdultTest: false,
-            ipQualityRiskScoreTest: 0
+            ipQualityRiskScore: 0
         }
 
         // Compute the information from the plugin
