@@ -25,15 +25,34 @@ chrome.runtime.onMessage.addListener(
             // displays the results
             let percentage = ((securityTest.score / securityTest.maxScore) * 100).toFixed(2);
 
+            // A+, A, A-, B+, B, B-, C+, C, C-, D
             switch (true) {
-                case (percentage >= 75):
+                case (percentage >= 90):
+                    rating.innerHTML = "A+";
+                    break;
+                case (percentage >= 80):
                     rating.innerHTML = "A";
+                    break;
+                case (percentage >= 70):
+                    rating.innerHTML = "A-";
+                    break;
+                case (percentage >= 60):
+                    rating.innerHTML = "B+";
                     break;
                 case (percentage >= 50):
                     rating.innerHTML = "B";
                     break;
-                case (percentage >= 25):
+                case (percentage >= 40):
+                    rating.innerHTML = "B-";
+                    break;
+                case (percentage >= 30):
+                    rating.innerHTML = "C+";
+                    break;
+                case (percentage >= 20):
                     rating.innerHTML = "C";
+                    break;
+                case (percentage >= 10):
+                    rating.innerHTML = "C-";
                     break;
                 default:
                     rating.innerHTML = "D";
@@ -41,34 +60,34 @@ chrome.runtime.onMessage.addListener(
             }
 
             const results = "<ul class=\"list-group\">" +
-                "<li class=\"list-group-item justify-content-between align-items-center\">Domain: " + securityTest.domain + "</li>" +
-                "<li class=\"list-group-item justify-content-between align-items-center\">Path: " +  securityTest.path + "</li>" +
-                "<li class=\"list-group-item justify-content-between align-items-center\">Score: " + percentage + "%</li>" +
+                "<li class=\"list-group-item justify-content-between align-items-center\">Domain: <span class=\"badge bg-primary rounded-pill\">" + securityTest.domain + "</span></li>" +
+                "<li class=\"list-group-item justify-content-between align-items-center\">Path: <span class=\"badge bg-primary rounded-pill\">" +  securityTest.path + "</span></li>" +
+                "<li class=\"list-group-item justify-content-between align-items-center\">Score: <span class=\"badge bg-primary rounded-pill\">" + percentage + "%</span></li>" +
                 "<ul class=\"list-group\">" +
                 "</ul>" +
-                "<li class=\"list-group-item justify-content-between align-items-center\">HTTPS Protocols Test: " + securityTest.httpsProtocolsTest + "</li>" +
-                "<li class=\"list-group-item justify-content-between align-items-center\">Client Side Comments Test: " + securityTest.clientSideCommentsTest + "</li>" +
-                "<li class=\"list-group-item justify-content-between align-items-center\">Untrusted Links Test: " + securityTest.untrustedLinksTest + "</li>" +
-                "<li class=\"list-group-item justify-content-between align-items-center\">Basic XSS Test: " + securityTest.basicXXSTest + "</li>" +
-                "<li class=\"list-group-item justify-content-between align-items-center\">Address Auto Fill Enabled: " + securityTest.addressAutoFillTest + "</li>" +
-                "<li class=\"list-group-item justify-content-between align-items-center\">Banking Auto Fill Enabled: " + securityTest.bankingAutoFillTest + "</li>" +
-                "<li class=\"list-group-item justify-content-between align-items-center\">Safe Browsing Enabled: " + securityTest.safeBrowsing1Test + "</li>" +
-                "<li class=\"list-group-item justify-content-between align-items-center\">Safe Browsing Reporting Enabled: " + securityTest.safeBrowsing2Test + "</li>" +
-                "<li class=\"list-group-item justify-content-between align-items-center\">Tracking Enabled: " + securityTest.trackingTest + "</li>" +
-                "<li class=\"list-group-item justify-content-between align-items-center\">Link Auditing Enabled: " + securityTest.auditingTest + "</li>" +
-                "<li class=\"list-group-item justify-content-between align-items-center\">Cookie Security Test: " + securityTest.cookieSecurityTest + "</li>" +
-                "<li class=\"list-group-item justify-content-between align-items-center\">Timely Cookies Test: " + securityTest.timelyCookiesTest + "</li>" +
+                "<li class=\"list-group-item justify-content-between align-items-center\">HTTPS Protocols Test: <span class=\"badge bg-primary rounded-pill\">" + securityTest.httpsProtocolsTest + "</span></li>" +
+                "<li class=\"list-group-item justify-content-between align-items-center\">Client Side Comments Test: <span class=\"badge bg-primary rounded-pill\">" + securityTest.clientSideCommentsTest + "</span></li>" +
+                "<li class=\"list-group-item justify-content-between align-items-center\">Untrusted Links Test: <span class=\"badge bg-primary rounded-pill\">" + securityTest.untrustedLinksTest + "</span></li>" +
+                "<li class=\"list-group-item justify-content-between align-items-center\">Basic XSS Test: <span class=\"badge bg-primary rounded-pill\">" + securityTest.basicXXSTest + "</span></li>" +
+                "<li class=\"list-group-item justify-content-between align-items-center\">Address Auto Fill Enabled: <span class=\"badge bg-primary rounded-pill\">" + securityTest.addressAutoFillTest + "</span></li>" +
+                "<li class=\"list-group-item justify-content-between align-items-center\">Banking Auto Fill Enabled: <span class=\"badge bg-primary rounded-pill\">" + securityTest.bankingAutoFillTest + "</span></li>" +
+                "<li class=\"list-group-item justify-content-between align-items-center\">Safe Browsing Enabled: <span class=\"badge bg-primary rounded-pill\">" + securityTest.safeBrowsing1Test + "</span></li>" +
+                "<li class=\"list-group-item justify-content-between align-items-center\">Safe Browsing Reporting Enabled: <span class=\"badge bg-primary rounded-pill\">" + securityTest.safeBrowsing2Test + "</span></li>" +
+                "<li class=\"list-group-item justify-content-between align-items-center\">Tracking Enabled: <span class=\"badge bg-primary rounded-pill\">" + securityTest.trackingTest + "</span></li>" +
+                "<li class=\"list-group-item justify-content-between align-items-center\">Link Auditing Enabled: <span class=\"badge bg-primary rounded-pill\">" + securityTest.auditingTest + "</span></li>" +
+                "<li class=\"list-group-item justify-content-between align-items-center\">Cookie Security Test: <span class=\"badge bg-primary rounded-pill\">" + securityTest.cookieSecurityTest + "</span></li>" +
+                "<li class=\"list-group-item justify-content-between align-items-center\">Timely Cookies Test: <span class=\"badge bg-primary rounded-pill\">" + securityTest.timelyCookiesTest + "</span></li>" +
                 "<ul class=\"list-group\">" +
                 "</ul>" +
-                "<li class=\"list-group-item justify-content-between align-items-center\">Google Safe Browsing API: " + securityTest.googleSafeBrowsingTest + "</li>" +
-                "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API Unsafe Test: " + securityTest.ipQualityUnsafeTest + "</li>" +
-                "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API DNS Test: " + securityTest.ipQualityDnsValidTest + "</li>" +
-                "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API Spamming Test: " + securityTest.ipQualitySpammingTest + "</li>" +
-                "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API Malware Test: " + securityTest.ipQualityMalwareTest + "</li>" +
-                "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API Phishing Test: " + securityTest.ipQualityPhishingTest + "</li>" +
-                "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API Suspicious Test: " + securityTest.ipQualitySuspiciousTest + "</li>" +
-                "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API Adult Content Test: " + securityTest.ipQualityAdultTest + "</li>" +
-                "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API Risk Score: " + securityTest.ipQualityRiskScore + "</li>" +
+                "<li class=\"list-group-item justify-content-between align-items-center\">Google Safe Browsing API: <span class=\"badge bg-primary rounded-pill\">" + securityTest.googleSafeBrowsingTest + "</span></li>" +
+                "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API Unsafe Test: <span class=\"badge bg-primary rounded-pill\">" + securityTest.ipQualityUnsafeTest + "</span></li>" +
+                "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API DNS Test: <span class=\"badge bg-primary rounded-pill\">" + securityTest.ipQualityDnsValidTest + "</span></li>" +
+                "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API Spamming Test: <span class=\"badge bg-primary rounded-pill\">" + securityTest.ipQualitySpammingTest + "</span></li>" +
+                "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API Malware Test: <span class=\"badge bg-primary rounded-pill\">" + securityTest.ipQualityMalwareTest + "</span></li>" +
+                "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API Phishing Test: <span class=\"badge bg-primary rounded-pill\">" + securityTest.ipQualityPhishingTest + "</span></li>" +
+                "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API Suspicious Test: <span class=\"badge bg-primary rounded-pill\">" + securityTest.ipQualitySuspiciousTest + "</span></li>" +
+                "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API Adult Content Test: <span class=\"badge bg-primary rounded-pill\">" + securityTest.ipQualityAdultTest + "</span></li>" +
+                "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API Risk Score: <span class=\"badge bg-primary rounded-pill\">" + securityTest.ipQualityRiskScore + "</span></li>" +
                 "</ul>"
 
             const dashOffset = 472 - ((securityTest.score / securityTest.maxScore) * 472)
