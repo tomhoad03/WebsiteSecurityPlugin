@@ -107,7 +107,7 @@ function socket(addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingRepo
 }
 
 chrome.runtime.onMessage.addListener(
-    function(request, sender, sendResponse) {
+    function(request) {
         console.log("message_received");
 
         if (request.msg === "results_request") {
