@@ -27,6 +27,13 @@ h1, p {
   border-radius: 50%;
   box-shadow: inset 5px 5px 2px -1px rgba(170, 170, 170, 0.5),
               inset -5px -5px 2px -1px rgba(236, 236, 236, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#rating {
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 svg {
   position: absolute;
@@ -40,4 +47,7 @@ circle {
   stroke-width: 10px;
   stroke-linecap: round;
   stroke-dasharray: 472;
+}
+#results {
+  padding: 10px;
 }
