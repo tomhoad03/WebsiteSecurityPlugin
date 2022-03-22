@@ -64,7 +64,6 @@ chrome.tabs.onActivated.addListener(async () => {
 
 function socket(addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingReporting, doNotTrack, hyperlinkAuditing, cookieData) {
     let ws = new WebSocket("ws://localhost:8100");
-    console.log("refresh: " + window.location.hostname);
 
     // Listen for messages from the server.
     ws.onopen = function() {
@@ -91,31 +90,28 @@ function socket(addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingRepo
         // update the security score
         if (data.id === "results") {
             let securityTest1 = data.securityTest;
-
             chrome.storage.local.set(securityTest1);
-
-            console.log("results_await: " + securityTest1.domain);
-
-            chrome.storage.local.get(null, function(data) {
-                console.info(data);
-            });
-
-            // may want to explore local storage, cookies or other solutions
             ws.close();
+        } else if (data.id === "xss") {
+            let inputs = document.getElementsByTagName("input");
+
+            console.log("xss test");
+            console.log(inputs);
+
+            for (let input in inputs) {
+                input.value = "test";
+                console.log(input);
+                document.getElementById(input.id).replaceWith(input);
+                //input.value = "<script>alert(\"XSS\")</script>"
+            }
         }
     };
 }
 
 chrome.runtime.onMessage.addListener(
     function(request) {
-        console.log("message_received");
-
         if (request.msg === "results_request") {
-            console.log("results_request");
-
             chrome.storage.local.get(null, function(securityTest) {
-                console.log("results_sending: " + securityTest.domain);
-
                 chrome.runtime.sendMessage({
                     msg: "results_sent",
                     data: {

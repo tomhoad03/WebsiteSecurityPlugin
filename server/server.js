@@ -210,7 +210,7 @@ wss.on("connection", ws => {
                 }
 
                 // Performs XSS vulnerability checks.
-                // securityTest.basicXXSTest = checkBasicXXS();
+                securityTest.basicXXSTest = checkBasicXXS();
 
                 function checkBasicXXS() {
                     ws.send(JSON.stringify({
