@@ -8,11 +8,12 @@ let database;
 app().listen(8110, function () {
     const sqlite3 = require("sqlite3");
 
-    database = new sqlite3.Database("security.db", sqlite3.OPEN_READWRITE, (err) => {
+    database = new sqlite3.Database("server\\security.db", sqlite3.OPEN_READWRITE, (err) => {
         if (err) {
             console.error(err.message);
+        } else {
+            console.log("Connected to the security database.");
         }
-        console.log("Connected to the security database.");
     });
 });
 
