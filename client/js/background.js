@@ -95,13 +95,13 @@ function socket(addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingRepo
         } else if (data.id === "xss") {
             let inputs = document.getElementsByTagName("input");
 
-            console.log("xss test");
-            console.log(inputs);
+            //console.log("xss test");
+            //console.log(inputs);
 
             for (let input in inputs) {
-                input.value = "test";
-                console.log(input);
-                document.getElementById(input.id).replaceWith(input);
+                //input.value = "test";
+                //console.log(input);
+                //document.getElementById(input.id).replaceWith(input);
                 //input.value = "<script>alert(\"XSS\")</script>"
             }
         }

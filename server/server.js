@@ -36,7 +36,7 @@ wss.on("connection", ws => {
             href: data.href,
             path: data.path,
             score: 0,
-            maxScore: 20,
+            maxScore: 26,
             scriptTests: [],
             linkTests: [],
             httpsProtocolsTest: false, // http or https?
@@ -67,11 +67,7 @@ wss.on("connection", ws => {
             try {
                 checkScriptSecurity(data.html);
                 checkLinkSecurity(data.html);
-                checkInternalScript();
 
-                // CWE-353
-                // https://rules.sonarsource.com/html/tag/cwe/RSPEC-5725
-                // https://cwe.mitre.org/data/definitions/353.html
                 function checkScriptSecurity(html) {
                     if (html.includes("<script")) {
                         let scriptTag = html.substring(html.indexOf("<script"), html.indexOf(">", html.indexOf("<script")) + 1);
@@ -155,6 +151,44 @@ wss.on("connection", ws => {
                             securityTest.scriptTests = [scriptTest];
                         }
                         checkScriptSecurity(html.substring(html.indexOf("</script>") + 9));
+                    } else {
+                        for (let scriptTest in securityTest.scriptTests) {
+                            if (!scriptTest.external) {
+                                securityTest.score--;
+                                break;
+                            }
+                        }
+                        for (let scriptTest in securityTest.scriptTests) {
+                            if (scriptTest.eval) {
+                                securityTest.score--;
+                                break;
+                            }
+                        }
+                        for (let scriptTest in securityTest.scriptTests) {
+                            if (scriptTest.execScript) {
+                                securityTest.score--;
+                                break;
+                            }
+                        }
+                        for (let scriptTest in securityTest.scriptTests) {
+                            if (scriptTest.timeout) {
+                                securityTest.score--;
+                                break;
+                            }
+                        }
+                        for (let scriptTest in securityTest.scriptTests) {
+                            if (scriptTest.interval) {
+                                securityTest.score--;
+                                break;
+                            }
+                        }
+                        for (let scriptTest in securityTest.scriptTests) {
+                            if (scriptTest.innerHTML) {
+                                securityTest.score--;
+                                break;
+                            }
+                        }
+                        securityTest.score += 6;
                     }
                 }
 
@@ -181,20 +215,10 @@ wss.on("connection", ws => {
                     }
                 }
 
-                // are any of the scripts internal?
-                function checkInternalScript() {
-                    for (let scriptTest in securityTest.scriptTests) {
-                        if (!scriptTest.external) {
-                            break;
-                        }
-                    }
-                    securityTest.score++;
-                }
-
                 // does the webpage uses https protocols?
                 if (data.protocol === "https:") {
                     securityTest.httpsProtocolsTest = true;
-                    securityTest.score++;
+                    securityTest.score += 3;
                 }
 
                 // are any comments are left in the html?
@@ -203,9 +227,6 @@ wss.on("connection", ws => {
                     securityTest.score++;
                 }
 
-                // CWE-615
-                // https://rules.sonarsource.com/html/tag/cwe/RSPEC-1876
-                // https://cwe.mitre.org/data/definitions/615.html
                 function checkClientSideComments(html) {
                     return !html.includes("<!--") && !html.includes("-->");
                 }
@@ -218,8 +239,8 @@ wss.on("connection", ws => {
                         id: "xss",
                         message: "<SCRIPT SRC=http://xss.rocks/xss.js></SCRIPT>"
                     }));
-                    securityTest.score++;
-                    return true;
+                    // securityTest.score++;
+                    return false;
                 }
 
                 // checks browser properties
@@ -259,6 +280,16 @@ wss.on("connection", ws => {
                 function checkCookieTimeliness(cookies) {
                     cookies.forEach(cookie => {
                         if (cookie.expirationDate < Math.round(Date.now() / 1000)) {
+                            return false;
+                        }
+                    });
+                    securityTest.score++;
+                    return true;
+                }
+
+                function checkCookieHTTP(cookies) {
+                    cookies.forEach(cookie => {
+                        if (cookie.secure === false) {
                             return false;
                         }
                     });
