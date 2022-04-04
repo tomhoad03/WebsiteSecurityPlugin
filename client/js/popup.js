@@ -55,55 +55,67 @@ chrome.runtime.onMessage.addListener(
 
                 const results = "<ul class=\"list-group\">" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">Domain:" +
-                    "<span class=\"badge bg-primary rounded-pill\">" + securityTest.domain + "</span></li>" +
+                    "<span class=\"badge rounded-pill\" id=\"general\">" + securityTest.domain + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">Path:" +
-                    "<span class=\"badge bg-primary rounded-pill\">" + securityTest.path + "</span></li>" +
+                    "<span class=\"badge rounded-pill\" id=\"general\">" + securityTest.path + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">Score:" +
-                    "<span class=\"badge bg-primary rounded-pill\">" + percentage + "%</span></li>" +
+                    "<span class=\"badge rounded-pill\" id=\"general\">" + percentage + "%</span></li>" +
                     "<ul class=\"list-group\">" +
                     "</ul>" +
+                    "<li class=\"list-group-item justify-content-between align-items-center\">Cross Origin Scripts Test:" +
+                    "<span class=\"badge rounded-pill\" id=" + securityTest.crossOriginScriptsTest + ">" + securityTest.crossOriginScriptsTest + "</span></li>" +
+                    "<li class=\"list-group-item justify-content-between align-items-center\">Integrity Scripts Test:" +
+                    "<span class=\"badge rounded-pill\" id=" + securityTest.integrityScriptsTest + ">" + securityTest.integrityScriptsTest + "</span></li>" +
+                    "<li class=\"list-group-item justify-content-between align-items-center\">Nonce Scripts Test:" +
+                    "<span class=\"badge rounded-pill\" id=" + securityTest.nonceScriptsTest + ">" + securityTest.nonceScriptsTest + "</span></li>" +
+                    "<li class=\"list-group-item justify-content-between align-items-center\">External Test:" +
+                    "<span class=\"badge rounded-pill\" id=" + securityTest.externalScriptsTest + ">" + securityTest.externalScriptsTest + "</span></li>" +
+                    "<li class=\"list-group-item justify-content-between align-items-center\">Dynamic Execution Scripts Test:" +
+                    "<span class=\"badge rounded-pill\" id=" + securityTest.dynamicExecutionScriptsTest + ">" + securityTest.dynamicExecutionScriptsTest + "</span></li>" +
+                    "<li class=\"list-group-item justify-content-between align-items-center\">Outdated Scripts Test:" +
+                    "<span class=\"badge rounded-pill\" id=" + securityTest.outdatedScriptsTest + ">" + securityTest.outdatedScriptsTest + "</span></li>" +
+                    "<li class=\"list-group-item justify-content-between align-items-center\">Trusted Links Test:" +
+                    "<span class=\"badge rounded-pill\" id=" + securityTest.trustedLinksTest + ">" + securityTest.trustedLinksTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">HTTPS Protocols Test:" +
-                    "<span class=\"badge bg-primary rounded-pill\">" + securityTest.httpsProtocolsTest + "</span></li>" +
+                    "<span class=\"badge rounded-pill\" id=" + securityTest.httpsProtocolsTest + ">" + securityTest.httpsProtocolsTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">Client Side Comments Test:" +
-                    "<span class=\"badge bg-primary rounded-pill\">" + securityTest.clientSideCommentsTest + "</span></li>" +
-                    "<li class=\"list-group-item justify-content-between align-items-center\">Untrusted Links Test:" +
-                    "<span class=\"badge bg-primary rounded-pill\">" + securityTest.untrustedLinksTest + "</span></li>" +
+                    "<span class=\"badge rounded-pill\" id=" + securityTest.clientSideCommentsTest + ">" + securityTest.clientSideCommentsTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">Address Auto Fill Enabled:" +
-                    "<span class=\"badge bg-primary rounded-pill\">" + securityTest.addressAutoFillTest + "</span></li>" +
+                    "<span class=\"badge rounded-pill\" id=" + securityTest.addressAutoFillTest + ">" + securityTest.addressAutoFillTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">Banking Auto Fill Enabled:" +
-                    "<span class=\"badge bg-primary rounded-pill\">" + securityTest.bankingAutoFillTest + "</span></li>" +
+                    "<span class=\"badge rounded-pill\" id=" + securityTest.bankingAutoFillTest + ">" + securityTest.bankingAutoFillTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">Safe Browsing Enabled:" +
-                    "<span class=\"badge bg-primary rounded-pill\">" + securityTest.safeBrowsing1Test + "</span></li>" +
+                    "<span class=\"badge rounded-pill\" id=" + securityTest.safeBrowsingTest + ">" + securityTest.safeBrowsingTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">Safe Browsing Reporting Enabled:" +
-                    "<span class=\"badge bg-primary rounded-pill\">" + securityTest.safeBrowsing2Test + "</span></li>" +
+                    "<span class=\"badge rounded-pill\" id=" + securityTest.browsingBlockingTest + ">" + securityTest.browsingBlockingTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">Tracking Enabled:" +
-                    "<span class=\"badge bg-primary rounded-pill\">" + securityTest.trackingTest + "</span></li>" +
+                    "<span class=\"badge rounded-pill\" id=" + securityTest.trackingTest + ">" + securityTest.trackingTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">Link Auditing Enabled:" +
-                    "<span class=\"badge bg-primary rounded-pill\">" + securityTest.auditingTest + "</span></li>" +
+                    "<span class=\"badge rounded-pill\" id=" + securityTest.auditingTest + ">" + securityTest.auditingTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">Cookie Security Test:" +
-                    "<span class=\"badge bg-primary rounded-pill\">" + securityTest.cookieSecurityTest + "</span></li>" +
+                    "<span class=\"badge rounded-pill\" id=" + securityTest.cookieSecurityTest + ">" + securityTest.cookieSecurityTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">Timely Cookies Test:" +
-                    "<span class=\"badge bg-primary rounded-pill\">" + securityTest.timelyCookiesTest + "</span></li>" +
+                    "<span class=\"badge rounded-pill\" id=" + securityTest.timelyCookiesTest + ">" + securityTest.timelyCookiesTest + "</span></li>" +
                     "<ul class=\"list-group\">" +
                     "</ul>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">Google Safe Browsing API:" +
-                    "<span class=\"badge bg-primary rounded-pill\">" + securityTest.googleSafeBrowsingTest + "</span></li>" +
+                    "<span class=\"badge rounded-pill\" id=" + securityTest.googleSafeBrowsingTest + ">" + securityTest.googleSafeBrowsingTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API Unsafe Test:" +
-                    "<span class=\"badge bg-primary rounded-pill\">" + securityTest.ipQualityUnsafeTest + "</span></li>" +
+                    "<span class=\"badge rounded-pill\" id=" + !securityTest.ipQualityUnsafeTest + ">" + securityTest.ipQualityUnsafeTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API DNS Test:" +
-                    "<span class=\"badge bg-primary rounded-pill\">" + securityTest.ipQualityDnsValidTest + "</span></li>" +
+                    "<span class=\"badge rounded-pill\" id=" + securityTest.ipQualityDnsValidTest + ">" + securityTest.ipQualityDnsValidTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API Spamming Test:" +
-                    "<span class=\"badge bg-primary rounded-pill\">" + securityTest.ipQualitySpammingTest + "</span></li>" +
+                    "<span class=\"badge rounded-pill\" id=" + !securityTest.ipQualitySpammingTest + ">" + securityTest.ipQualitySpammingTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API Malware Test:" +
-                    "<span class=\"badge bg-primary rounded-pill\">" + securityTest.ipQualityMalwareTest + "</span></li>" +
+                    "<span class=\"badge rounded-pill\" id=" + !securityTest.ipQualityMalwareTest + ">" + securityTest.ipQualityMalwareTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API Phishing Test:" +
-                    "<span class=\"badge bg-primary rounded-pill\">" + securityTest.ipQualityPhishingTest + "</span></li>" +
+                    "<span class=\"badge rounded-pill\" id=" + !securityTest.ipQualityPhishingTest + ">" + securityTest.ipQualityPhishingTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API Suspicious Test:" +
-                    "<span class=\"badge bg-primary rounded-pill\">" + securityTest.ipQualitySuspiciousTest + "</span></li>" +
+                    "<span class=\"badge rounded-pill\" id=" + !securityTest.ipQualitySuspiciousTest + ">" + securityTest.ipQualitySuspiciousTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API Adult Content Test:" +
-                    "<span class=\"badge bg-primary rounded-pill\">" + securityTest.ipQualityAdultTest + "</span></li>" +
+                    "<span class=\"badge rounded-pill\" id=" + !securityTest.ipQualityAdultTest + ">" + securityTest.ipQualityAdultTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API Risk Score:" +
-                    "<span class=\"badge bg-primary rounded-pill\">" + securityTest.ipQualityRiskScore + "</span></li>" +
+                    "<span class=\"badge rounded-pill\" id=\"general\">" + securityTest.ipQualityRiskScore + "</span></li>" +
                     "</ul>";
 
                 const dashOffset = 472 - ((securityTest.score / securityTest.maxScore) * 472);

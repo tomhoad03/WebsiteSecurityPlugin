@@ -14,8 +14,6 @@ h1, p {
   margin: auto;
 }
 .outer {
-  /* width: 120px;
-  height: 120px; */
   border-radius: 50%;
   padding: 15px;
   box-shadow: 5px 5px 2px -1px rgba(170, 170, 170, 0.5),
@@ -50,4 +48,14 @@ circle {
 }
 #results {
   padding: 10px;
+}
+
+#true {
+  background-color: #00B74A;
+}
+#false {
+  background-color: #F93154;
+}
+#general {
+  background-color: #1266F1;
 }

@@ -74,7 +74,7 @@ wss.on("connection", ws => {
                 function checkScriptSecurity(html, count) {
                     let numberScripts = 0, crossOriginScripts = 0, integrityScripts = 0, nonceScripts = 0, externalScripts = 0, dynamicExecutionScripts = 0;
 
-                    if (html.includes("<script")) {
+                    if (html.includes("<script") && count < 1000) {
                         let scriptTag = html.substring(html.indexOf("<script"), html.indexOf(">", html.indexOf("<script")) + 1);
                         let scriptTest = {
                             href: "null",
@@ -164,23 +164,23 @@ wss.on("connection", ws => {
                         }
                         checkScriptSecurity(html.substring(html.indexOf("</script>") + 9), count + 1);
                     } else {
-                        if (numberScripts > crossOriginScripts) {
+                        if (numberScripts === crossOriginScripts) {
                             securityTest.crossOriginScriptsTest = true;
                             securityTest.score++;
                         }
-                        if (numberScripts > integrityScripts) {
+                        if (numberScripts === integrityScripts) {
                             securityTest.integrityScriptsTest = true;
                             securityTest.score++;
                         }
-                        if (numberScripts > nonceScripts) {
+                        if (numberScripts === nonceScripts) {
                             securityTest.nonceScriptsTest = true;
                             securityTest.score++;
                         }
-                        if (numberScripts > externalScripts) {
+                        if (numberScripts === externalScripts) {
                             securityTest.externalScriptsTest = true;
                             securityTest.score++;
                         }
-                        if (numberScripts > dynamicExecutionScripts) {
+                        if (numberScripts === dynamicExecutionScripts) {
                             securityTest.dynamicExecutionScriptsTest = true;
                             securityTest.score++;
                         }
@@ -191,7 +191,7 @@ wss.on("connection", ws => {
                 function checkLinkSecurity(html, count) {
                     let numberLinks = 0, trustedLinks = 0;
 
-                    if (html.includes("href=") && count < 10000) {
+                    if (html.includes("href=") && count < 1000) {
                         let link = html.substring(html.indexOf("href=\"") + 6, html.indexOf("\"", html.indexOf("href=\"") + 6));
                         let linkTest = {
                             href: link,
@@ -211,7 +211,7 @@ wss.on("connection", ws => {
                         }
                         checkLinkSecurity(html.substring(html.indexOf("href=\"") + 6), count + 1);
                     } else {
-                        if (numberLinks > trustedLinks) {
+                        if (numberLinks === trustedLinks) {
                             securityTest.trustedLinksTest = true;
                             securityTest.score++;
                         }
