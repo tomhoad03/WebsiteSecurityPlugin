@@ -2,7 +2,6 @@ const {Server} = require("ws");
 const wss = new Server({port: 8100});
 const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 const app = require("express");
-const Console = require("console");
 let database;
 
 // start a connection with the database
@@ -37,25 +36,24 @@ wss.on("connection", ws => {
             href: data.href,
             path: data.path,
             score: 0,
-            maxScore: 27,
+            maxScore: 28,
             scriptTests: [],
-            numberScripts: 0,
-            externalScripts: 0,
-            crossOriginScripts: 0,
-            integrityScripts: 0,
-            nonceScripts: 0,
-            dynamicExecutionsScripts: 0,
-            outdatedJQuery: false,
+            externalScriptsTest: false,
+            crossOriginScriptsTest: false,
+            integrityScriptsTest: false,
+            nonceScriptsTest: false,
+            dynamicExecutionScriptsTest: false,
+            outdatedScriptsTest: false,
             linkTests: [],
+            trustedLinksTest: false,
             httpsProtocolsTest: false, // http or https?
             clientSideCommentsTest: false, // comments?
-            untrustedLinksTest: true, // links?
-            addressAutoFillTest: data.autoFill1, // address autofill
-            bankingAutoFillTest: data.autoFill2, // banking autofill
-            safeBrowsing1Test: data.safeBrowsing1, // safe browsing enabled
-            safeBrowsing2Test: data.safeBrowsing2, // safe browsing blocking enabled
-            trackingTest: data.doNotTrack, // tracking prevention
-            auditingTest: data.auditing, // link auditing
+            addressAutoFillTest: false, // address autofill
+            bankingAutoFillTest: false, // banking autofill
+            safeBrowsingTest: false, // safe browsing enabled
+            browsingBlockingTest: false, // safe browsing blocking enabled
+            trackingTest: false, // tracking prevention
+            auditingTest: false, // link auditing
             cookieSecurityTest: false, // secure cookies?
             timelyCookiesTest: false, // timely cookies
             googleSafeBrowsingTest: false, // safe browsing api result
@@ -72,10 +70,10 @@ wss.on("connection", ws => {
         // Compute the information from the plugin
         if (data.id === "window") {
             try {
-                checkScriptSecurity(data.html);
-                checkLinkSecurity(data.html);
+                checkScriptSecurity(data.html, 0);
+                function checkScriptSecurity(html, count) {
+                    let numberScripts = 0, crossOriginScripts = 0, integrityScripts = 0, nonceScripts = 0, externalScripts = 0, dynamicExecutionScripts = 0;
 
-                function checkScriptSecurity(html) {
                     if (html.includes("<script")) {
                         let scriptTag = html.substring(html.indexOf("<script"), html.indexOf(">", html.indexOf("<script")) + 1);
                         let scriptTest = {
@@ -84,15 +82,15 @@ wss.on("connection", ws => {
                             integrity: false,
                             nonce: false,
                             external: false,
-                            dynamicExecutionsScript: false,
+                            dynamicExecutionScript: false,
                             outdated: false
                         }
-                        securityTest.numberScripts++;
+                        numberScripts++;
 
                         // is the referenced script cross-origin anonymous? - there is no exchange of user credentials
                         if (scriptTag.includes("crossorigin=\"anonymous\"")) {
                             scriptTest.crossOrigin = true;
-                            securityTest.crossOriginScripts++;
+                            crossOriginScripts++;
                         }
 
                         // does the referenced script have integrity? - used to check if the script gets manipulated
@@ -101,7 +99,7 @@ wss.on("connection", ws => {
 
                             if (integrity.length > 0) {
                                 scriptTest.integrity = true;
-                                securityTest.integrityScripts++;
+                                integrityScripts++;
                             }
                         }
 
@@ -111,7 +109,7 @@ wss.on("connection", ws => {
 
                             if (nonce.length > 0) {
                                 scriptTest.nonce = true;
-                                securityTest.nonceScripts++;
+                                nonceScripts++;
                             }
                         }
 
@@ -122,7 +120,7 @@ wss.on("connection", ws => {
 
                             if (scriptSrc.includes("http")) {
                                 scriptTest.external = true;
-                                securityTest.externalScripts++;
+                                externalScripts++;
                             }
 
                             let request = new XMLHttpRequest();
@@ -137,8 +135,8 @@ wss.on("connection", ws => {
                                         response.includes("window.execScript") ||
                                         response.includes("setInterval") ||
                                         response.includes("innerHTML")){
-                                        scriptTest.dynamicExecutionsScript = true;
-                                        securityTest.dynamicExecutionsScripts++;
+                                        scriptTest.dynamicExecutionScript = true;
+                                        dynamicExecutionScripts++;
                                     }
                                 }
                             };
@@ -152,7 +150,10 @@ wss.on("connection", ws => {
                             let splitVersion = scriptTag.substring(scriptTag.indexOf("jquery-") + 7, scriptTag.indexOf(".js", scriptTag.indexOf("jquery-") + 7)).split(".");
 
                             if (parseInt(splitVersion[0]) < 3 || parseInt(splitVersion[1]) < 6 || parseInt(splitVersion[2]) < 0) {
-                                securityTest.outdatedJQuery = true;
+                                if (!securityTest.outdatedScriptsTest) {
+                                    securityTest.outdatedScriptsTest = true;
+                                    securityTest.score++;
+                                }
                             }
                         }
 
@@ -161,41 +162,46 @@ wss.on("connection", ws => {
                         } else {
                             securityTest.scriptTests = [scriptTest];
                         }
-                        checkScriptSecurity(html.substring(html.indexOf("</script>") + 9));
+                        checkScriptSecurity(html.substring(html.indexOf("</script>") + 9), count + 1);
                     } else {
-                        if (securityTest.numberScripts > securityTest.crossOriginScripts) {
+                        if (numberScripts > crossOriginScripts) {
+                            securityTest.crossOriginScriptsTest = true;
                             securityTest.score++;
                         }
-                        if (securityTest.numberScripts > securityTest.integrityScripts) {
+                        if (numberScripts > integrityScripts) {
+                            securityTest.integrityScriptsTest = true;
                             securityTest.score++;
                         }
-                        if (securityTest.numberScripts > securityTest.nonceScripts) {
+                        if (numberScripts > nonceScripts) {
+                            securityTest.nonceScriptsTest = true;
                             securityTest.score++;
                         }
-                        if (securityTest.numberScripts > securityTest.externalScripts) {
+                        if (numberScripts > externalScripts) {
+                            securityTest.externalScriptsTest = true;
                             securityTest.score++;
                         }
-                        if (securityTest.numberScripts > securityTest.dynamicExecutionsScripts) {
-                            securityTest.score++;
-                        }
-                        if (!securityTest.outdatedJQuery) {
+                        if (numberScripts > dynamicExecutionScripts) {
+                            securityTest.dynamicExecutionScriptsTest = true;
                             securityTest.score++;
                         }
                     }
                 }
 
-                function checkLinkSecurity(html) {
-                    if (html.includes("href=")) {
+                checkLinkSecurity(data.html, 0);
+                function checkLinkSecurity(html, count) {
+                    let numberLinks = 0, trustedLinks = 0;
+
+                    if (html.includes("href=") && count < 10000) {
                         let link = html.substring(html.indexOf("href=\"") + 6, html.indexOf("\"", html.indexOf("href=\"") + 6));
                         let linkTest = {
                             href: link,
                             trusted: false
                         }
+                        numberLinks++;
 
                         if (!link.includes("http") || link.includes("https")) {
                             linkTest.trusted = true;
-                        } else {
-                            securityTest.untrustedLinksTest = false;
+                            trustedLinks++;
                         }
 
                         if (securityTest.linkTests !== undefined) {
@@ -203,7 +209,12 @@ wss.on("connection", ws => {
                         } else {
                             securityTest.linkTests = [linkTest];
                         }
-                        checkLinkSecurity(html.substring(html.indexOf("href=\"") + 6));
+                        checkLinkSecurity(html.substring(html.indexOf("href=\"") + 6), count + 1);
+                    } else {
+                        if (numberLinks > trustedLinks) {
+                            securityTest.trustedLinksTest = true;
+                            securityTest.score++;
+                        }
                     }
                 }
 
@@ -212,30 +223,34 @@ wss.on("connection", ws => {
                     securityTest.httpsProtocolsTest = true;
                     securityTest.score++;
                 }
-
                 // are any comments are left in the html?
                 if (!data.html.includes("<!--") && !data.html.includes("-->")) {
                     securityTest.clientSideCommentsTest = true;
                     securityTest.score++;
                 }
-
                 // checks browser properties
-                if (securityTest.addressAutoFillTest) {
+                if (data.addressAutoFill) {
+                    securityTest.addressAutoFillTest = data.addressAutoFill;
                     securityTest.score++;
                 }
-                if (securityTest.bankingAutoFillTest) {
+                if (data.bankingAutoFill) {
+                    securityTest.bankingAutoFillTest = data.bankingAutoFill;
                     securityTest.score++;
                 }
-                if (securityTest.safeBrowsing1Test) {
+                if (data.safeBrowsing) {
+                    securityTest.safeBrowsing1Test = data.safeBrowsing;
                     securityTest.score++;
                 }
-                if (!securityTest.safeBrowsing2Test) {
+                if (!data.browsingBlocking) {
+                    securityTest.browsingBlockingTest = data.browsingBlocking;
                     securityTest.score++;
                 }
-                if (securityTest.trackingTest) {
+                if (data.tracking) {
+                    securityTest.trackingTest = data.tracking;
                     securityTest.score++;
                 }
-                if (securityTest.auditingTest) {
+                if (data.auditing) {
+                    securityTest.auditingTest = data.auditing;
                     securityTest.score++;
                 }
 
@@ -404,7 +419,7 @@ wss.on("connection", ws => {
 
                             // register a new domain name
                             if (domainCount === 0) {
-                                database.each("INSERT INTO Domains (domainName) VALUES (" + quote + securityTest.domain + quote + ")", (err, row) => {
+                                database.each("INSERT INTO Domains (domainName) VALUES (" + quote + securityTest.domain + quote + ")", (err) => {
                                     if (err) {
                                         console.error(err.message);
                                     }
@@ -428,21 +443,27 @@ wss.on("connection", ws => {
                                             let domainEntry = Date.now();
 
                                             database.run("INSERT INTO DomainEntries (domainEntryId, domainId, path, href, score," +
-                                                "httpsProtocolsTest, clientSideCommentsTest, untrustedLinksTest, basicXSSTest, addressAutoFillTest, bankingAutoFillTest, safeBrowsing1Test, safeBrowsing2Test, trackingTest, auditingTest, cookieSecurityTest, timelyCookiesTest," +
+                                                "crossOriginScriptsTest, integrityScriptsTest, nonceScriptsTest, externalScriptsTest, dynamicExecutionScriptsTest, outdatedScriptsTest, trustedLinksTest, " +
+                                                "httpsProtocolsTest, clientSideCommentsTest, addressAutoFillTest, bankingAutoFillTest, safeBrowsingTest, browsingBlockingTest, trackingTest, auditingTest, cookieSecurityTest, timelyCookiesTest," +
                                                 "googleSafeBrowsingTest, ipQualityUnsafeTest, ipQualityDnsValidTest, ipQualitySpammingTest, ipQualityMalwareTest, ipQualityPhishingTest, ipQualitySuspiciousTest, ipQualityAdultTest, ipQualityRiskScore)" +
                                                 "VALUES (" + quote + domainEntry + quote +
                                                 ", " + quote + domainId1 + quote +
                                                 ", " + quote + securityTest.path + quote +
                                                 ", " + quote + securityTest.href + quote +
                                                 ", " + quote + securityTest.score + quote +
+                                                ", " + quote + securityTest.crossOriginScriptsTest + quote +
+                                                ", " + quote + securityTest.integrityScriptsTest + quote +
+                                                ", " + quote + securityTest.nonceScriptsTest + quote +
+                                                ", " + quote + securityTest.externalScriptsTest + quote +
+                                                ", " + quote + securityTest.dynamicExecutionScriptsTest + quote +
+                                                ", " + quote + securityTest.outdatedScriptsTest + quote +
+                                                ", " + quote + securityTest.trustedLinksTest + quote +
                                                 ", " + quote + securityTest.httpsProtocolsTest + quote +
                                                 ", " + quote + securityTest.clientSideCommentsTest + quote +
-                                                ", " + quote + securityTest.untrustedLinksTest + quote +
-                                                ", " + quote + false + quote +
                                                 ", " + quote + securityTest.addressAutoFillTest + quote +
                                                 ", " + quote + securityTest.bankingAutoFillTest + quote +
                                                 ", " + quote + securityTest.safeBrowsing1Test + quote +
-                                                ", " + quote + securityTest.safeBrowsing2Test + quote +
+                                                ", " + quote + securityTest.browsingBlockingTest + quote +
                                                 ", " + quote + securityTest.trackingTest + quote +
                                                 ", " + quote + securityTest.auditingTest + quote +
                                                 ", " + quote + securityTest.cookieSecurityTest + quote +
@@ -474,7 +495,7 @@ wss.on("connection", ws => {
                                                                 ", " + quote + script.integrity + quote +
                                                                 ", " + quote + script.nonce + quote +
                                                                 ", " + quote + script.external + quote +
-                                                                ", " + quote + script.dynamicExecutionsScript + quote +
+                                                                ", " + quote + script.dynamicExecutionScript + quote +
                                                                 ", " + quote + script.outdated + quote + ")");
                                                         }
 

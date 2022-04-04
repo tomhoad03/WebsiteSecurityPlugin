@@ -1,38 +1,38 @@
-let addressAutoFill = false, bankingAutoFill = false, safeBrowsing = false, safeBrowsingReporting = false, doNotTrack = false, hyperlinkAuditing = false;
+let addressAutoFillTest = false, bankingAutoFillTest = false, safeBrowsingTest = false, browsingBlockingTest = false, trackingTest = false, auditingTest = false;
 let cookieData;
 
 // checks if addresses get autofilled
 chrome.privacy.services.autofillAddressEnabled.get({}, function(details) {
     if (details.value) {
-        addressAutoFill = true;
+        addressAutoFillTest = true;
     }
 });
 
 // checks if bank details get autofilled
 chrome.privacy.services.autofillCreditCardEnabled.get({}, function(details) {
     if (details.value) {
-        bankingAutoFill = true;
+        bankingAutoFillTest = true;
     }
 });
 
 // checks if safe browsing is enabled
 if (chrome.privacy.services.safeBrowsingEnabled) {
-    safeBrowsing = true;
+    safeBrowsingTest = true;
 }
 
 // checks if safe browsing blocks a page
 if (chrome.privacy.services.safeBrowsingExtendedReportingEnabled) {
-    safeBrowsingReporting = true;
+    browsingBlockingTest = true;
 }
 
 // checks if chrome allows 'do not track'
 if (chrome.privacy.services.doNotTrackEnabled) {
-    doNotTrack = true;
+    trackingTest = true;
 }
 
 // checks if chrome audit pings hyperlinks
 if (chrome.privacy.services.hyperlinkAuditingEnabled) {
-    hyperlinkAuditing = true;
+    auditingTest = true;
 }
 
 // gets all the cookies stored on the browser
@@ -47,7 +47,7 @@ chrome.webNavigation.onDOMContentLoaded.addListener(async () => {
     chrome.scripting.executeScript({
         target: { tabId: tab.id },
         function: socket,
-        args: [addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingReporting, doNotTrack, hyperlinkAuditing, cookieData]
+        args: [addressAutoFillTest, bankingAutoFillTest, safeBrowsingTest, browsingBlockingTest, trackingTest, auditingTest, cookieData]
     });
 });
 
@@ -58,11 +58,11 @@ chrome.tabs.onActivated.addListener(async () => {
     chrome.scripting.executeScript({
         target: { tabId: tab.id },
         function: socket,
-        args: [addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingReporting, doNotTrack, hyperlinkAuditing, cookieData]
+        args: [addressAutoFillTest, bankingAutoFillTest, safeBrowsingTest, browsingBlockingTest, trackingTest, auditingTest, cookieData]
     });
 })
 
-function socket(addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingReporting, doNotTrack, hyperlinkAuditing, cookieData) {
+function socket(addressAutoFillTest, bankingAutoFillTest, safeBrowsingTest, browsingBlockingTest, trackingTest, auditingTest, cookieData) {
     let ws = new WebSocket("ws://localhost:8100");
 
     // Listen for messages from the server.
@@ -73,12 +73,12 @@ function socket(addressAutoFill, bankingAutoFill, safeBrowsing, safeBrowsingRepo
             domain: window.location.hostname,
             path: window.location.pathname,
             protocol: window.location.protocol,
-            autoFill1: addressAutoFill,
-            autoFill2: bankingAutoFill,
-            safeBrowsing1: safeBrowsing,
-            safeBrowsing2: safeBrowsingReporting,
-            noTracking: doNotTrack,
-            auditing: hyperlinkAuditing,
+            addressAutoFill: addressAutoFillTest,
+            bankingAutoFill: bankingAutoFillTest,
+            safeBrowsing: safeBrowsingTest,
+            browsingBlocking: browsingBlockingTest,
+            tracking: trackingTest,
+            auditing: auditingTest,
             cookies: cookieData.filter(cookie => cookie.domain.includes(window.location.hostname)),
             html: document.getElementsByTagName('html')[0].innerHTML,
         }));
