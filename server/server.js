@@ -37,8 +37,15 @@ wss.on("connection", ws => {
             href: data.href,
             path: data.path,
             score: 0,
-            maxScore: 29,
+            maxScore: 27,
             scriptTests: [],
+            numberScripts: 0,
+            externalScripts: 0,
+            crossOriginScripts: 0,
+            integrityScripts: 0,
+            nonceScripts: 0,
+            dynamicExecutionsScripts: 0,
+            outdatedJQuery: false,
             linkTests: [],
             httpsProtocolsTest: false, // http or https?
             clientSideCommentsTest: false, // comments?
@@ -73,21 +80,19 @@ wss.on("connection", ws => {
                         let scriptTag = html.substring(html.indexOf("<script"), html.indexOf(">", html.indexOf("<script")) + 1);
                         let scriptTest = {
                             href: "null",
-                            external: false,
-                            nonce: false,
-                            integrity: false,
                             crossOrigin: false,
-                            eval: false,
-                            execScript: false,
-                            timeout: false,
-                            interval: false,
-                            innerHTML: false,
+                            integrity: false,
+                            nonce: false,
+                            external: false,
+                            dynamicExecutionsScript: false,
                             outdated: false
                         }
+                        securityTest.numberScripts++;
 
                         // is the referenced script cross-origin anonymous? - there is no exchange of user credentials
                         if (scriptTag.includes("crossorigin=\"anonymous\"")) {
                             scriptTest.crossOrigin = true;
+                            securityTest.crossOriginScripts++;
                         }
 
                         // does the referenced script have integrity? - used to check if the script gets manipulated
@@ -96,6 +101,7 @@ wss.on("connection", ws => {
 
                             if (integrity.length > 0) {
                                 scriptTest.integrity = true;
+                                securityTest.integrityScripts++;
                             }
                         }
 
@@ -105,6 +111,7 @@ wss.on("connection", ws => {
 
                             if (nonce.length > 0) {
                                 scriptTest.nonce = true;
+                                securityTest.nonceScripts++;
                             }
                         }
 
@@ -115,6 +122,7 @@ wss.on("connection", ws => {
 
                             if (scriptSrc.includes("http")) {
                                 scriptTest.external = true;
+                                securityTest.externalScripts++;
                             }
 
                             let request = new XMLHttpRequest();
@@ -124,20 +132,13 @@ wss.on("connection", ws => {
                                     let response = request.responseText;
 
                                     // all of these things could allow dynamic execution of code
-                                    if (response.includes("eval(")) {
-                                        scriptTest.eval = true;
-                                    }
-                                    if (response.includes("window.execScript")) {
-                                        scriptTest.execScript = true;
-                                    }
-                                    if (response.includes("setTimeout")) {
-                                        scriptTest.timeout = true;
-                                    }
-                                    if (response.includes("setInterval")) {
-                                        scriptTest.interval = true;
-                                    }
-                                    if (response.includes("innerHTML")) {
-                                        scriptTest.innerHTML = true;
+                                    if (response.includes("eval(") ||
+                                        response.includes("window.execScript") ||
+                                        response.includes("window.execScript") ||
+                                        response.includes("setInterval") ||
+                                        response.includes("innerHTML")){
+                                        scriptTest.dynamicExecutionsScript = true;
+                                        securityTest.dynamicExecutionsScripts++;
                                     }
                                 }
                             };
@@ -151,7 +152,7 @@ wss.on("connection", ws => {
                             let splitVersion = scriptTag.substring(scriptTag.indexOf("jquery-") + 7, scriptTag.indexOf(".js", scriptTag.indexOf("jquery-") + 7)).split(".");
 
                             if (parseInt(splitVersion[0]) < 3 || parseInt(splitVersion[1]) < 6 || parseInt(splitVersion[2]) < 0) {
-                                scriptTest.outdated = true;
+                                securityTest.outdatedJQuery = true;
                             }
                         }
 
@@ -162,49 +163,24 @@ wss.on("connection", ws => {
                         }
                         checkScriptSecurity(html.substring(html.indexOf("</script>") + 9));
                     } else {
-                        for (let scriptTest in securityTest.scriptTests) {
-                            if (!scriptTest.external) {
-                                securityTest.score--;
-                                break;
-                            }
+                        if (securityTest.numberScripts > securityTest.crossOriginScripts) {
+                            securityTest.score++;
                         }
-                        for (let scriptTest in securityTest.scriptTests) {
-                            if (scriptTest.eval) {
-                                securityTest.score--;
-                                break;
-                            }
+                        if (securityTest.numberScripts > securityTest.integrityScripts) {
+                            securityTest.score++;
                         }
-                        for (let scriptTest in securityTest.scriptTests) {
-                            if (scriptTest.execScript) {
-                                securityTest.score--;
-                                break;
-                            }
+                        if (securityTest.numberScripts > securityTest.nonceScripts) {
+                            securityTest.score++;
                         }
-                        for (let scriptTest in securityTest.scriptTests) {
-                            if (scriptTest.timeout) {
-                                securityTest.score--;
-                                break;
-                            }
+                        if (securityTest.numberScripts > securityTest.externalScripts) {
+                            securityTest.score++;
                         }
-                        for (let scriptTest in securityTest.scriptTests) {
-                            if (scriptTest.interval) {
-                                securityTest.score--;
-                                break;
-                            }
+                        if (securityTest.numberScripts > securityTest.dynamicExecutionsScripts) {
+                            securityTest.score++;
                         }
-                        for (let scriptTest in securityTest.scriptTests) {
-                            if (scriptTest.innerHTML) {
-                                securityTest.score--;
-                                break;
-                            }
+                        if (!securityTest.outdatedJQuery) {
+                            securityTest.score++;
                         }
-                        for (let scriptTest in securityTest.scriptTests) {
-                            if (scriptTest.outdated) {
-                                securityTest.score--;
-                                break;
-                            }
-                        }
-                        securityTest.score += 7;
                     }
                 }
 
@@ -234,7 +210,7 @@ wss.on("connection", ws => {
                 // does the webpage uses https protocols?
                 if (data.protocol === "https:") {
                     securityTest.httpsProtocolsTest = true;
-                    securityTest.score += 3;
+                    securityTest.score++;
                 }
 
                 // are any comments are left in the html?
@@ -493,16 +469,13 @@ wss.on("connection", ws => {
                                                         let scriptCount = Object.values(JSON.parse(JSON.stringify(row)))[0];
 
                                                         if (scriptCount === 0) {
-                                                            database.run("INSERT INTO Scripts (href, external, nonce, integrity, crossOrigin, eval, execScript, timeout, interval, innerHTML) VALUES (" + quote + script.href + quote +
-                                                                ", " + quote + script.external + quote +
-                                                                ", " + quote + script.nonce + quote +
-                                                                ", " + quote + script.integrity + quote +
+                                                            database.run("INSERT INTO Scripts (href, crossOrigin, integrity, nonce, external, dynamicExecutionScript, outdated) VALUES (" + quote + script.href + quote +
                                                                 ", " + quote + script.crossOrigin + quote +
-                                                                ", " + quote + script.eval + quote +
-                                                                ", " + quote + script.execScript + quote +
-                                                                ", " + quote + script.timeout + quote +
-                                                                ", " + quote + script.interval + quote +
-                                                                ", " + quote + script.innerHTML + quote + ")");
+                                                                ", " + quote + script.integrity + quote +
+                                                                ", " + quote + script.nonce + quote +
+                                                                ", " + quote + script.external + quote +
+                                                                ", " + quote + script.dynamicExecutionsScript + quote +
+                                                                ", " + quote + script.outdated + quote + ")");
                                                         }
 
                                                         database.each("SELECT scriptId FROM Scripts WHERE href = " + quote + script.href + quote, (err, row) => {
