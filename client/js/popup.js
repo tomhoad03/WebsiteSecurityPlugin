@@ -68,8 +68,6 @@ chrome.runtime.onMessage.addListener(
                     "<span class=\"badge bg-primary rounded-pill\">" + securityTest.clientSideCommentsTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">Untrusted Links Test:" +
                     "<span class=\"badge bg-primary rounded-pill\">" + securityTest.untrustedLinksTest + "</span></li>" +
-                    "<li class=\"list-group-item justify-content-between align-items-center\">Basic XSS Test:" +
-                    "<span class=\"badge bg-primary rounded-pill\">" + securityTest.basicXXSTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">Address Auto Fill Enabled:" +
                     "<span class=\"badge bg-primary rounded-pill\">" + securityTest.addressAutoFillTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">Banking Auto Fill Enabled:" +

@@ -2,6 +2,7 @@ const {Server} = require("ws");
 const wss = new Server({port: 8100});
 const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 const app = require("express");
+const Console = require("console");
 let database;
 
 // start a connection with the database
@@ -36,13 +37,12 @@ wss.on("connection", ws => {
             href: data.href,
             path: data.path,
             score: 0,
-            maxScore: 26,
+            maxScore: 29,
             scriptTests: [],
             linkTests: [],
             httpsProtocolsTest: false, // http or https?
             clientSideCommentsTest: false, // comments?
             untrustedLinksTest: true, // links?
-            basicXXSTest: false, // xxs test (not currently functioning)
             addressAutoFillTest: data.autoFill1, // address autofill
             bankingAutoFillTest: data.autoFill2, // banking autofill
             safeBrowsing1Test: data.safeBrowsing1, // safe browsing enabled
@@ -81,7 +81,8 @@ wss.on("connection", ws => {
                             execScript: false,
                             timeout: false,
                             interval: false,
-                            innerHTML: false
+                            innerHTML: false,
+                            outdated: false
                         }
 
                         // is the referenced script cross-origin anonymous? - there is no exchange of user credentials
@@ -145,6 +146,15 @@ wss.on("connection", ws => {
                             request.send(null);
                         }
 
+                        // is the script outdated - only works for jquery
+                        if (scriptTag.includes("jquery")) {
+                            let splitVersion = scriptTag.substring(scriptTag.indexOf("jquery-") + 7, scriptTag.indexOf(".js", scriptTag.indexOf("jquery-") + 7)).split(".");
+
+                            if (parseInt(splitVersion[0]) < 3 || parseInt(splitVersion[1]) < 6 || parseInt(splitVersion[2]) < 0) {
+                                scriptTest.outdated = true;
+                            }
+                        }
+
                         if (securityTest.scriptTests !== undefined) {
                             securityTest.scriptTests = securityTest.scriptTests.concat(scriptTest);
                         } else {
@@ -188,7 +198,13 @@ wss.on("connection", ws => {
                                 break;
                             }
                         }
-                        securityTest.score += 6;
+                        for (let scriptTest in securityTest.scriptTests) {
+                            if (scriptTest.outdated) {
+                                securityTest.score--;
+                                break;
+                            }
+                        }
+                        securityTest.score += 7;
                     }
                 }
 
@@ -222,25 +238,9 @@ wss.on("connection", ws => {
                 }
 
                 // are any comments are left in the html?
-                if (checkClientSideComments(data.html)) {
+                if (!data.html.includes("<!--") && !data.html.includes("-->")) {
                     securityTest.clientSideCommentsTest = true;
                     securityTest.score++;
-                }
-
-                function checkClientSideComments(html) {
-                    return !html.includes("<!--") && !html.includes("-->");
-                }
-
-                // Performs XSS vulnerability checks.
-                securityTest.basicXXSTest = checkBasicXXS();
-
-                function checkBasicXXS() {
-                    ws.send(JSON.stringify({
-                        id: "xss",
-                        message: "<SCRIPT SRC=http://xss.rocks/xss.js></SCRIPT>"
-                    }));
-                    // securityTest.score++;
-                    return false;
                 }
 
                 // checks browser properties
@@ -268,33 +268,33 @@ wss.on("connection", ws => {
                 securityTest.timelyCookiesTest = checkCookieTimeliness(data.cookies);
 
                 function checkCookieSecurity(cookies) {
+                    let secureCookies = true;
+
                     cookies.forEach(cookie => {
                         if (cookie.secure === false) {
-                            return false;
+                            secureCookies = false;
                         }
                     });
-                    securityTest.score++;
-                    return true;
+
+                    if (secureCookies) {
+                        securityTest.score++;
+                    }
+                    return secureCookies;
                 }
 
                 function checkCookieTimeliness(cookies) {
+                    let timelyCookies = true;
+
                     cookies.forEach(cookie => {
                         if (cookie.expirationDate < Math.round(Date.now() / 1000)) {
-                            return false;
+                            timelyCookies = false;
                         }
                     });
-                    securityTest.score++;
-                    return true;
-                }
 
-                function checkCookieHTTP(cookies) {
-                    cookies.forEach(cookie => {
-                        if (cookie.secure === false) {
-                            return false;
-                        }
-                    });
-                    securityTest.score++;
-                    return true;
+                    if (timelyCookies) {
+                        securityTest.score++;
+                    }
+                    return timelyCookies;
                 }
 
                 // check if google trusts it
@@ -462,7 +462,7 @@ wss.on("connection", ws => {
                                                 ", " + quote + securityTest.httpsProtocolsTest + quote +
                                                 ", " + quote + securityTest.clientSideCommentsTest + quote +
                                                 ", " + quote + securityTest.untrustedLinksTest + quote +
-                                                ", " + quote + securityTest.basicXXSTest + quote +
+                                                ", " + quote + false + quote +
                                                 ", " + quote + securityTest.addressAutoFillTest + quote +
                                                 ", " + quote + securityTest.bankingAutoFillTest + quote +
                                                 ", " + quote + securityTest.safeBrowsing1Test + quote +
