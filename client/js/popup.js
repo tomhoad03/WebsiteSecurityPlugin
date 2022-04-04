@@ -101,19 +101,19 @@ chrome.runtime.onMessage.addListener(
                     "<li class=\"list-group-item justify-content-between align-items-center\">Google Safe Browsing API:" +
                     "<span class=\"badge rounded-pill\" id=" + securityTest.googleSafeBrowsingTest + ">" + securityTest.googleSafeBrowsingTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API Unsafe Test:" +
-                    "<span class=\"badge rounded-pill\" id=" + !securityTest.ipQualityUnsafeTest + ">" + securityTest.ipQualityUnsafeTest + "</span></li>" +
+                    "<span class=\"badge rounded-pill\" id=" + securityTest.ipQualityUnsafeTest + ">" + securityTest.ipQualityUnsafeTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API DNS Test:" +
                     "<span class=\"badge rounded-pill\" id=" + securityTest.ipQualityDnsValidTest + ">" + securityTest.ipQualityDnsValidTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API Spamming Test:" +
-                    "<span class=\"badge rounded-pill\" id=" + !securityTest.ipQualitySpammingTest + ">" + securityTest.ipQualitySpammingTest + "</span></li>" +
+                    "<span class=\"badge rounded-pill\" id=" + securityTest.ipQualitySpammingTest + ">" + securityTest.ipQualitySpammingTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API Malware Test:" +
-                    "<span class=\"badge rounded-pill\" id=" + !securityTest.ipQualityMalwareTest + ">" + securityTest.ipQualityMalwareTest + "</span></li>" +
+                    "<span class=\"badge rounded-pill\" id=" + securityTest.ipQualityMalwareTest + ">" + securityTest.ipQualityMalwareTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API Phishing Test:" +
-                    "<span class=\"badge rounded-pill\" id=" + !securityTest.ipQualityPhishingTest + ">" + securityTest.ipQualityPhishingTest + "</span></li>" +
+                    "<span class=\"badge rounded-pill\" id=" + securityTest.ipQualityPhishingTest + ">" + securityTest.ipQualityPhishingTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API Suspicious Test:" +
-                    "<span class=\"badge rounded-pill\" id=" + !securityTest.ipQualitySuspiciousTest + ">" + securityTest.ipQualitySuspiciousTest + "</span></li>" +
+                    "<span class=\"badge rounded-pill\" id=" + securityTest.ipQualitySuspiciousTest + ">" + securityTest.ipQualitySuspiciousTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API Adult Content Test:" +
-                    "<span class=\"badge rounded-pill\" id=" + !securityTest.ipQualityAdultTest + ">" + securityTest.ipQualityAdultTest + "</span></li>" +
+                    "<span class=\"badge rounded-pill\" id=" + securityTest.ipQualityAdultTest + ">" + securityTest.ipQualityAdultTest + "</span></li>" +
                     "<li class=\"list-group-item justify-content-between align-items-center\">IP Quality API Risk Score:" +
                     "<span class=\"badge rounded-pill\" id=\"general\">" + securityTest.ipQualityRiskScore + "</span></li>" +
                     "</ul>";

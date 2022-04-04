@@ -48,12 +48,12 @@ wss.on("connection", ws => {
             trustedLinksTest: false,
             httpsProtocolsTest: false, // http or https?
             clientSideCommentsTest: false, // comments?
-            addressAutoFillTest: false, // address autofill
-            bankingAutoFillTest: false, // banking autofill
-            safeBrowsingTest: false, // safe browsing enabled
-            browsingBlockingTest: false, // safe browsing blocking enabled
-            trackingTest: false, // tracking prevention
-            auditingTest: false, // link auditing
+            addressAutoFillTest: !data.addressAutoFill, // address autofill
+            bankingAutoFillTest: !data.bankingAutoFillTest, // banking autofill
+            safeBrowsingTest: data.safeBrowsing, // safe browsing enabled
+            browsingBlockingTest: data.browsingBlocking, // safe browsing blocking enabled
+            trackingTest: data.tracking, // tracking prevention
+            auditingTest: data.auditing, // link auditing
             cookieSecurityTest: false, // secure cookies?
             timelyCookiesTest: false, // timely cookies
             googleSafeBrowsingTest: false, // safe browsing api result
@@ -228,29 +228,24 @@ wss.on("connection", ws => {
                     securityTest.clientSideCommentsTest = true;
                     securityTest.score++;
                 }
+
                 // checks browser properties
-                if (data.addressAutoFill) {
-                    securityTest.addressAutoFillTest = data.addressAutoFill;
+                if (securityTest.addressAutoFillTest) {
                     securityTest.score++;
                 }
-                if (data.bankingAutoFill) {
-                    securityTest.bankingAutoFillTest = data.bankingAutoFill;
+                if (securityTest.bankingAutoFillTest) {
                     securityTest.score++;
                 }
-                if (data.safeBrowsing) {
-                    securityTest.safeBrowsing1Test = data.safeBrowsing;
+                if (securityTest.safeBrowsingTest) {
                     securityTest.score++;
                 }
-                if (!data.browsingBlocking) {
-                    securityTest.browsingBlockingTest = data.browsingBlocking;
+                if (securityTest.browsingBlockingTest) {
                     securityTest.score++;
                 }
-                if (data.tracking) {
-                    securityTest.trackingTest = data.tracking;
+                if (securityTest.trackingTest) {
                     securityTest.score++;
                 }
-                if (data.auditing) {
-                    securityTest.auditingTest = data.auditing;
+                if (securityTest.auditingTest) {
                     securityTest.score++;
                 }
 
@@ -331,31 +326,31 @@ wss.on("connection", ws => {
                         if (this.readyState === 4 && this.status === 200) {
                             let result = JSON.parse(this.responseText);
 
-                            securityTest.ipQualityUnsafeTest = result.unsafe;
+                            securityTest.ipQualityUnsafeTest = !result.unsafe;
                             securityTest.ipQualityDnsValidTest = result.dns_valid;
-                            securityTest.ipQualitySpammingTest = result.spamming;
-                            securityTest.ipQualityMalwareTest = result.malware;
-                            securityTest.ipQualityPhishingTest = result.phishing;
-                            securityTest.ipQualitySuspiciousTest = result.suspicious;
+                            securityTest.ipQualitySpammingTest = !result.spamming;
+                            securityTest.ipQualityMalwareTest = !result.malware;
+                            securityTest.ipQualityPhishingTest = !result.phishing;
+                            securityTest.ipQualitySuspiciousTest = !result.suspicious;
                             securityTest.ipQualityAdultTest = result.adult;
                             securityTest.ipQualityRiskScoreTest = result.risk_score;
 
-                            if (!securityTest.ipQualityUnsafeTest) { // is the website unsafe? general rating
+                            if (securityTest.ipQualityUnsafeTest) { // is the website unsafe? general rating
                                 securityTest.score++;
                             }
                             if (securityTest.ipQualityDnsValidTest) { // does the website have valid dns records?
                                 securityTest.score++;
                             }
-                            if (!securityTest.ipQualitySpammingTest) { // is the website associated with potential spam
+                            if (securityTest.ipQualitySpammingTest) { // is the website associated with potential spam
                                 securityTest.score++;
                             }
-                            if (!securityTest.ipQualityMalwareTest) { // is the website associated with malware attacks
+                            if (securityTest.ipQualityMalwareTest) { // is the website associated with malware attacks
                                 securityTest.score++;
                             }
-                            if (!securityTest.ipQualityPhishingTest) { // is the website associated with phishing attacks
+                            if (securityTest.ipQualityPhishingTest) { // is the website associated with phishing attacks
                                 securityTest.score++;
                             }
-                            if (!securityTest.ipQualitySuspiciousTest) { // is the website associated with malicious attacks
+                            if (securityTest.ipQualitySuspiciousTest) { // is the website associated with malicious attacks
                                 securityTest.score++;
                             }
                             if (securityTest.ipQualityAdultTest) { // is the website displaying adult content
@@ -462,7 +457,7 @@ wss.on("connection", ws => {
                                                 ", " + quote + securityTest.clientSideCommentsTest + quote +
                                                 ", " + quote + securityTest.addressAutoFillTest + quote +
                                                 ", " + quote + securityTest.bankingAutoFillTest + quote +
-                                                ", " + quote + securityTest.safeBrowsing1Test + quote +
+                                                ", " + quote + securityTest.safeBrowsingTest + quote +
                                                 ", " + quote + securityTest.browsingBlockingTest + quote +
                                                 ", " + quote + securityTest.trackingTest + quote +
                                                 ", " + quote + securityTest.auditingTest + quote +
