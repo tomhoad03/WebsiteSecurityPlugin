@@ -59,3 +59,7 @@ circle {
 #general {
   background-color: #1266F1;
 }
+
+.badge {
+  float:right;
+}
