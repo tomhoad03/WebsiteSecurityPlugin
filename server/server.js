@@ -223,6 +223,7 @@ wss.on("connection", ws => {
                     securityTest.httpsProtocolsTest = true;
                     securityTest.score++;
                 }
+
                 // are any comments are left in the html?
                 if (!data.html.includes("<!--") && !data.html.includes("-->")) {
                     securityTest.clientSideCommentsTest = true;
