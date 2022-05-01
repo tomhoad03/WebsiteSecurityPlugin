@@ -8,7 +8,7 @@ let database;
 app().listen(8110, function () {
     const sqlite3 = require("sqlite3");
 
-    database = new sqlite3.Database("server\\security.db", sqlite3.OPEN_READWRITE, (err) => {
+    database = new sqlite3.Database("security.db", sqlite3.OPEN_READWRITE, (err) => {
         if (err) {
             console.error(err.message);
         } else {
@@ -141,8 +141,10 @@ wss.on("connection", ws => {
                                 }
                             };
 
-                            request.open('GET', scriptSrc);
-                            request.send(null);
+                            try {
+                                request.open('GET', scriptSrc);
+                                request.send(null);
+                            } catch (ignored) { }
                         }
 
                         // is the script outdated - only works for jquery
